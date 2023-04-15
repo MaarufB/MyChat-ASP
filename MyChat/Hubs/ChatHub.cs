@@ -110,8 +110,27 @@ namespace MyChat.Hubs
 
         public async Task JoinGroup(string groupName)
         {
-            Console.WriteLine($"joined: {groupName}");
-            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            var splitGroupName = "";
+            if(groupName.Contains(":")) 
+            {
+                var newGroupName = groupName.Split(",");
+                var sender = newGroupName[0].Split(":")[1];
+                var recipient = newGroupName[1].Split(":")[1];
+
+                splitGroupName = GetGroupName(sender, recipient);
+
+                await Groups.AddToGroupAsync(Context.ConnectionId, splitGroupName);
+            }
+            else
+            {
+                throw new HubException("Groupname is Invalid");
+            }
+
+            Console.WriteLine(splitGroupName);
+
+
+
+            //await Groups.AddToGroupAsync(Context.ConnectionId, splitGroupName);
         }
 
         public async Task SendMessageToGroup(string groupName, CreateMessagePayload message)
