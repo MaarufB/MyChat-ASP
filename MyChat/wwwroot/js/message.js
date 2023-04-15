@@ -104,8 +104,8 @@ connection.start().then(function () {
     const groupName = `sender:${messageSender.value},recipient:${messageRecipent.value}`;
     console.log(groupName);
 
-    //connection.invoke("JoinGroup", groupName);
-    //console.log('connected')
+    connection.invoke("JoinGroup", groupName);
+    console.log('connected')
 });
 
 connection.on("ReceiveMessage", function (message) {
