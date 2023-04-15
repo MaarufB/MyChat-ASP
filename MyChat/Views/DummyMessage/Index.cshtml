@@ -1,0 +1,50 @@
+@model IEnumerable<AppIdentityUser>;
+
+<h1>Messaging Testing</h1>
+
+<div class="row border border-danger">
+    <div class="col-8">
+        <ul>
+            @foreach (var item in Model)
+            {
+                @if(item.UserName == @User.Identity?.Name) continue;
+                <li class="p-2 row">
+                        <p class="col-2">@item.UserName</p>
+                        <a asp-action="CreateMessage" asp-route-id="@item.Id" class="col">Check Message</a>
+                </li>   
+            }
+        </ul>
+    </div>
+</div>
+<div class="row justify-content-center pt-3 pb-4 border border-danger">
+    <div class="col-6 pt-3 pb-4 border border-success">
+        <h2>Messages</h2>
+        <form>
+                <div class="row m-2">
+                    <select asp-items="@ViewBag.Recipient" class="form-select col"> 
+                            <option disabled selected>--Select Recipient--</option>
+                    </select>
+                    <div class="col-2">
+                        <button class="" style="with:100%;">Load</button>
+                    </div>
+
+                </div>
+
+
+                <div>
+                    <h3>Message Thread</h3>
+                    <div class="bg-grey">
+                        dsds
+                    </div>
+                </div>
+                <div class="row m-2">
+                    <label for="">Content</label>
+                    <div class="row">
+                        <textarea class="col"></textarea>
+                        <button class="col-2 mt-4 mb-4 ml-2">Send</button>
+                    </div>
+
+                </div>
+        </form>
+    </div>
+</div>

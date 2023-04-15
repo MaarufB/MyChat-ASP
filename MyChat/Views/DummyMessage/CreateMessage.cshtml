@@ -1,0 +1,79 @@
+@model CreateMessageViewModel;
+<h1>Chat</h1>
+<div class="row justify-content-center pt-3 pb-4 border border-danger">
+    <div class="col-sm-10 pt-3 pb-4 border border-success">
+        <div class="row justify-content-center">
+            <div class="col-10 border chat-container">
+                <div class="chat-body d-flex flex-column scroll p-4" id="messageBox">
+                </div>
+            </div>
+        </div>
+        <form class="chat-input form" id="myForm">
+            <input 
+                asp-for="RecipientId" 
+                name="RecipientId" hidden 
+            />
+            <input 
+                asp-for="RecipientUsername" 
+                id="recipient" 
+                name="RecipientUsername" 
+                hidden 
+            />
+            <input 
+                asp-for="SenderId" 
+                name="SenderId" 
+                hidden 
+            />
+            <input 
+                asp-for="SenderUsername" 
+                id="sender" 
+                name="SenderUsername" 
+                hidden 
+            />
+
+            <div class="row m-2">
+                <div class="row">
+                    <textarea class="col" id="messageContent" asp-for="MessageContent" name="MessageContent"></textarea>
+
+                    <button class="col-2 mt-4 mb-4 ml-2">Send</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@*@section Scripts{
+    <script src="~/js/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/message.js"></script>
+}*@
+
+<script>
+    
+
+</script>
+
+
+<style>
+    div.scroll {
+        overflow-x: hidden;
+        overflow-y: auto;
+        height: 300px;
+    }
+
+
+    .d-flex {
+        height: 100%;
+    }
+
+    .card {
+        height: 300px;
+    }
+
+    .card-body {
+        overflow-y: auto;
+    }
+
+    .badge {
+        font-weight: 400;
+    }
+</style>
