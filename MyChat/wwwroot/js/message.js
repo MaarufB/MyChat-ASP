@@ -9,6 +9,38 @@ const groupName = `sender:${messageSender.value},recipient:${messageRecipent.val
 
 form.addEventListener('submit', handleSubmit);
 
+var connection = new signalR.HubConnectionBuilder()
+    .withUrl("/chatHub")
+    .build();
+
+
+connection.start().then(function () {
+    console.log(groupName);
+
+    connection.invoke("JoinGroup", groupName);
+    console.log('connected')
+});
+
+connection.on("ReceiveMessage", function (message) {
+    console.log('Message Recieved: ' + message);
+
+    const newElement = document.createElement('p');
+    const textNode = document.createTextNode(`${message.messageContent}`);
+
+    if (messageSender.value != message.senderUsername) {
+        newElement.classList = "align-self-start";
+    } else {
+        newElement.classList = "align-self-end";
+    }
+
+    newElement.appendChild(textNode);
+    myDiv.appendChild(newElement);
+    textArea.value = '';
+    let scroll = document.querySelector("#messageBox");
+    scroll.scrollTop = scroll.scrollHeight;
+});
+
+
 async function postData(url = '', data = {}) {
     const response = await fetch(url, {
         method: 'POST',
@@ -20,7 +52,7 @@ async function postData(url = '', data = {}) {
     return response.json();
 }
 
-async function handleSubmit(event) {
+function handleSubmit(event) {
     event.preventDefault();
 
     let payload = new FormData(event.target);
@@ -31,29 +63,28 @@ async function handleSubmit(event) {
     console.log(`Payload: ${payload}`);
 
     // Send a message to the group
-
-    let messageStatus = await connection.invoke(
+    //await connection.invoke(
+    connection.invoke(
         "SendMessageToGroup",
         groupName,
         payload)
         .catch((err) => {
             return console.error(err.toString());
         }); 
-    console.log(messageStatus);
-    console.log('Send message');
+
     return;
 
-    const response = await postData('/DummyMessage/SendMessage', payload);
+    //const response = await postData('/DummyMessage/SendMessage', payload);
 
-    if (response) {
-        const newElement = document.createElement('p');
-        console.log(response);
-        const textNode = document.createTextNode(`${response.messageContent}`);
-        newElement.classList = "align-self-end";
-        newElement.appendChild(textNode);
-        myDiv.appendChild(newElement);
-        textArea.value = '';
-    }
+    //if (response) {
+    //    const newElement = document.createElement('p');
+    //    console.log(response);
+    //    const textNode = document.createTextNode(`${response.messageContent}`);
+    //    newElement.classList = "align-self-end";
+    //    newElement.appendChild(textNode);
+    //    myDiv.appendChild(newElement);
+    //    textArea.value = '';
+    //}
 
     let scroll = document.querySelector("#messageBox");
     scroll.scrollTop = scroll.scrollHeight;
@@ -94,36 +125,11 @@ const loadMessages = async () => {
     console.log("Load Message Test!");
 }
 
-loadMessages();
+//loadMessages();
 // SignalR 
-var connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chatHub")
-    .build();
 
 
-connection.on("ReceiveMessage", function (message) {
-    console.log('Message Recieved: ' + message);
 
-    const newElement = document.createElement('p');
-    const textNode = document.createTextNode(`${message.messageContent}`);
 
-    if (messageSender.value != message.senderUsername) {
-        newElement.classList = "align-self-start";
-    } else {
-        newElement.classList = "align-self-end";
-    }
 
-    newElement.appendChild(textNode);
-    myDiv.appendChild(newElement);
-    textArea.value = '';
-    let scroll = document.querySelector("#messageBox");
-    scroll.scrollTop = scroll.scrollHeight;
-});
-
-connection.start().then(function () {
-    console.log(groupName);
-
-    connection.invoke("JoinGroup", groupName);
-    console.log('connected')
-});
 
