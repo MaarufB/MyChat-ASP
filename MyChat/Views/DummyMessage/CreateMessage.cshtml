@@ -11,7 +11,8 @@
         <form class="chat-input form" id="myForm">
             <input 
                 asp-for="RecipientId" 
-                name="RecipientId" hidden 
+                name="RecipientId" 
+                hidden 
             />
             <input 
                 asp-for="RecipientUsername" 
@@ -35,11 +36,16 @@
                 id="groupname"
                 name="GroupName"      
                 hidden       
-                />
+            />
 
             <div class="row m-2">
                 <div class="row">
-                    <textarea class="col" id="messageContent" asp-for="MessageContent" name="MessageContent"></textarea>
+                    <textarea 
+                        class="col" 
+                        id="messageContent" 
+                        asp-for="MessageContent" 
+                        name="MessageContent">
+                    </textarea>
 
                     <button class="col-2 mt-4 mb-4 ml-2">Send</button>
                 </div>
