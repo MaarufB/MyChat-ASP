@@ -1,9 +1,11 @@
-﻿using System.Security.Claims;
+﻿using System.Reflection;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using MyChat.Interfaces;
 using MyChat.Models;
+using MyChat.Repositories;
 using MyChat.ViewModels;
 //using Microsoft.AspNetCore.SignalR.IClientProxy;
 
@@ -108,13 +110,17 @@ namespace MyChat.Hubs
             return stringCompare ? $"{caller}-{other}" : $"{other}-{caller}";
         }
 
-        public async Task JoinGroup(string groupName)
+        public async Task<string> JoinGroup(string groupName)
         {
-            Console.WriteLine($"joined: {groupName}");
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+
+            var groupNameInfo = $"Group Information: {groupName}";
+            Console.WriteLine(groupNameInfo);
+
+            return groupName;
         }
 
-        public async Task SendMessageToGroup(string groupName, CreateMessagePayload message)
+        public async Task<bool> SendMessageToGroup(string groupName, CreateMessagePayload message)
         {
             var isSavedSuccess = await SaveMessageAsync(message);
 
@@ -123,9 +129,16 @@ namespace MyChat.Hubs
                 throw new HubException("Message Not saved");
             }
 
-            Console.WriteLine("Test Console!");
+            var messageLogInfo = $"Message log info"+
+                                $"sender: {message.SenderUsername}\n" +
+                                $"recipient: {message.RecipientUsername}\n" +
+                                $"content: {message.MessageContent}";
+
+            Console.WriteLine(messageLogInfo);
 
             await Clients.Group(groupName).SendAsync("ReceiveMessage", message);
+
+            return isSavedSuccess != 0;
         }
 
     }

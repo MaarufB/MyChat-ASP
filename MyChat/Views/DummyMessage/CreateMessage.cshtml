@@ -30,6 +30,12 @@
                 name="SenderUsername" 
                 hidden 
             />
+            <input 
+                asp-for="GroupName"
+                id="groupname"
+                name="GroupName"      
+                hidden       
+                />
 
             <div class="row m-2">
                 <div class="row">
@@ -42,13 +48,111 @@
     </div>
 </div>
 
-@*@section Scripts{
-    <script src="~/js/signalr/dist/browser/signalr.js"></script>
-    <script src="~/js/message.js"></script>
-}*@
-
+@section Scripts{
+    @*<script src="~/js/signalr/dist/browser/signalr.js"></script>*@
+    @*<script src="~/js/message.js"></script>*@
+}
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
 <script>
-    
+    "use strict";
+
+    const myDiv = document.getElementById('messageBox');
+    const textArea = document.getElementById("messageContent");
+    const messageSender = document.getElementById('sender');
+    const messageRecipent = document.getElementById('recipient');
+    const myGroupName = document.getElementById("groupname").value;
+    const form = document.getElementById('myForm');
+
+    form.addEventListener('submit', handleSubmit);
+
+    // SignalR
+    var connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub")
+        .build();
+
+    connection.start().then(function () {
+        connection.invoke("JoinGroup", myGroupName);
+    });
+
+    connection.on("ReceiveMessage", function (message) {
+
+        const newElement = document.createElement('p');
+        const textNode = document.createTextNode(`${message.messageContent}`);
+
+        if (messageSender.value != message.senderUsername) {
+            newElement.classList = "align-self-start";
+        } else {
+            newElement.classList = "align-self-end";
+        }
+
+        newElement.appendChild(textNode);
+        myDiv.appendChild(newElement);
+        let scroll = document.querySelector("#messageBox");
+        scroll.scrollTop = scroll.scrollHeight;
+    });
+
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        let payload = new FormData(event.target);
+        payload = Object.fromEntries(payload);
+        if (payload.MessageContent.length === 0) {
+            return;
+        }
+        console.log(`Payload: ${payload}`);
+
+        const isSuccess = await connection.invoke(
+            "SendMessageToGroup",
+            myGroupName,
+            payload)
+            .catch((err) => {
+                return console.error(err.toString());
+            });
+
+        if(isSuccess){ 
+            textArea.value = '';
+            let scroll = document.querySelector("#messageBox");
+            scroll.scrollTop = scroll.scrollHeight;
+        }
+
+        let scroll = document.querySelector("#messageBox");
+        scroll.scrollTop = scroll.scrollHeight;
+    }
+
+    function removeAllChildNodes(parent) {
+        while (parent.firstChild) {
+            parent.removeChild(parent.firstChild);
+        }
+    }
+
+    const loadMessages = async () => {
+        const currentUrl = window.location.href;
+        const splitUrl = currentUrl.split("/");
+        const otherUserId = splitUrl[splitUrl.length - 1];
+
+        const response = await fetch(`/DummyMessage/LoadMessage/${otherUserId}`);
+        const data = await response.json();
+
+        for (let item of data) {
+            const newElement = document.createElement('p');
+            const textNode = document.createTextNode(`${item.messageContent}`);
+            if (item.recipientId == otherUserId) {
+                newElement.classList = "align-self-end";
+            }
+            else {
+                newElement.classList = "align-self-start";
+            }
+
+            newElement.appendChild(textNode);
+            myDiv.appendChild(newElement);
+        }
+        let scroll = document.querySelector("#messageBox");
+        scroll.scrollTop = scroll.scrollHeight;
+
+        console.log("Load Message Test!");
+    }
+
+    loadMessages();
 
 </script>
 

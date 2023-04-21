@@ -14,5 +14,8 @@ namespace MyChat.ViewModels
         public string RecipientUsername { get; set; }
         public string MessageContent { get; set; }
         public List<DummyMessage> MessageThread { get; set; }
+
+        // new
+        public string GroupName { get; set; }
     }
 }

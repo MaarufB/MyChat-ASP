@@ -19,6 +19,37 @@ async function postData(url = '', data = {}) {
     return response.json();
 }
 
+// SignalR 
+var connection = new signalR.HubConnectionBuilder()
+    .withUrl("/chatHub")
+    .build();
+
+connection.start().then(function () {
+    const groupName = `sender:${messageSender.value},recipient:${messageRecipent.value}`;
+    console.log(groupName);
+
+    connection.invoke("JoinGroup", groupName);
+    console.log('connected')
+});
+
+connection.on("ReceiveMessage", function (message) {
+
+    const newElement = document.createElement('p');
+    const textNode = document.createTextNode(`${message.messageContent}`);
+
+    if (messageSender.value != message.senderUsername) {
+        newElement.classList = "align-self-start";
+    } else {
+        newElement.classList = "align-self-end";
+    }
+
+    newElement.appendChild(textNode);
+    myDiv.appendChild(newElement);
+    textArea.value = '';
+    let scroll = document.querySelector("#messageBox");
+    scroll.scrollTop = scroll.scrollHeight;
+});
+
 async function handleSubmit(event) {
     event.preventDefault();
 
@@ -90,38 +121,7 @@ const loadMessages = async () => {
     let scroll = document.querySelector("#messageBox");
     scroll.scrollTop = scroll.scrollHeight;
 
-
     console.log("Load Message Test!");
 }
 
 loadMessages();
-// SignalR 
-var connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chatHub")
-    .build();
-
-connection.start().then(function () {
-    const groupName = `sender:${messageSender.value},recipient:${messageRecipent.value}`;
-    console.log(groupName);
-
-    //connection.invoke("JoinGroup", groupName);
-    //console.log('connected')
-});
-
-connection.on("ReceiveMessage", function (message) {
-
-    const newElement = document.createElement('p');
-    const textNode = document.createTextNode(`${message.messageContent}`);
-
-    if(messageSender.value != message.senderUsername){
-        newElement.classList = "align-self-start";
-    }else{
-        newElement.classList = "align-self-end";
-    }
-
-    newElement.appendChild(textNode);
-    myDiv.appendChild(newElement);
-    textArea.value = '';
-    let scroll = document.querySelector("#messageBox");
-    scroll.scrollTop = scroll.scrollHeight;
-});

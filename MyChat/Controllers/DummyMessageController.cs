@@ -1,5 +1,6 @@
 
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -56,12 +57,35 @@ namespace MyChat.Controllers
                 RecipientUsername = otherUser.UserName,
                 RecipientId = otherUser.Id,
                 SenderUsername = currentUser.UserName,
-                SenderId = currentUser.Id
+                SenderId = currentUser.Id,
+                GroupName = NormalizeGroupName(currentUser.UserName, otherUser.UserName)
             };
 
+            Console.WriteLine($"GroupName: {currentUser.UserName}");
             return View(createMessage);
         }
-    
+
+        private string GetGroupName(string caller, string other)
+        {
+            var stringCompare = string.CompareOrdinal(caller, other) < 0;
+            return stringCompare ? $"{caller}-{other}" : $"{other}-{caller}";
+        }
+
+        private string NormalizeGroupName(string sender, string recipient)
+        {
+            var messageSender = string.Empty;
+            var messageRecipient = string.Empty;
+
+            if (sender.Contains("@") || recipient.Contains("@"))
+            {
+                messageSender = sender.Split("@")[0];
+                messageRecipient = recipient.Split("@")[0];
+
+
+            }
+
+            return GetGroupName(messageSender, messageRecipient);
+        }
 
         #region API CALLS
         [HttpGet]
