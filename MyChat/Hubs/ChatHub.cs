@@ -110,7 +110,8 @@ namespace MyChat.Hubs
 
         public async Task JoinGroup(string groupName)
         {
-            var splitGroupName = "";
+            var splitGroupName = string.Empty;
+
             if(groupName.Contains(":")) 
             {
                 var newGroupName = groupName.Split(",");
@@ -126,7 +127,7 @@ namespace MyChat.Hubs
                 throw new HubException("Groupname is Invalid");
             }
 
-            Console.WriteLine(splitGroupName);
+            Console.WriteLine($"Group Name: {splitGroupName}");
 
 
 
@@ -142,7 +143,8 @@ namespace MyChat.Hubs
                 throw new HubException("Message Not saved");
             }
 
-            Console.WriteLine("Test Console!");
+            var messageInfo = $"Group Name: ${groupName} \nmessage: {message.MessageContent}";
+            Console.WriteLine(messageInfo);
 
             await Clients.Group(groupName).SendAsync("ReceiveMessage", message);
         }
