@@ -5,8 +5,41 @@ const textArea = document.getElementById("messageContent");
 const messageSender = document.getElementById('sender');
 const messageRecipent = document.getElementById('recipient');
 const form = document.getElementById('myForm');
+const groupName = `sender:${messageSender.value},recipient:${messageRecipent.value}`;
 
 form.addEventListener('submit', handleSubmit);
+
+var connection = new signalR.HubConnectionBuilder()
+    .withUrl("/chatHub")
+    .build();
+
+
+connection.start().then(function () {
+    console.log(groupName);
+
+    connection.invoke("JoinGroup", groupName);
+    console.log('connected')
+});
+
+connection.on("ReceiveMessage", function (message) {
+    console.log('Message Recieved: ' + message);
+
+    const newElement = document.createElement('p');
+    const textNode = document.createTextNode(`${message.messageContent}`);
+
+    if (messageSender.value != message.senderUsername) {
+        newElement.classList = "align-self-start";
+    } else {
+        newElement.classList = "align-self-end";
+    }
+
+    newElement.appendChild(textNode);
+    myDiv.appendChild(newElement);
+    textArea.value = '';
+    let scroll = document.querySelector("#messageBox");
+    scroll.scrollTop = scroll.scrollHeight;
+});
+
 
 async function postData(url = '', data = {}) {
     const response = await fetch(url, {
@@ -61,30 +94,28 @@ async function handleSubmit(event) {
     console.log(`Payload: ${payload}`);
 
     // Send a message to the group
-
+    //await connection.invoke(
     connection.invoke(
         "SendMessageToGroup",
-        "my-group-name",
+        groupName,
         payload)
         .catch((err) => {
             return console.error(err.toString());
         }); 
-         console.log("Send message");
+
     return;
 
-    const response = await postData('/DummyMessage/SendMessage', payload);
+    //const response = await postData('/DummyMessage/SendMessage', payload);
 
-    if (response) {
-        const newElement = document.createElement('p');
-        console.log(response);
-        const textNode = document.createTextNode(`${response.messageContent}`);
-        newElement.classList = "align-self-end";
-        newElement.appendChild(textNode);
-        myDiv.appendChild(newElement);
-        textArea.value = '';
-        // removeAllChildNodes(myDiv);
-        // await loadMessages();
-    }
+    //if (response) {
+    //    const newElement = document.createElement('p');
+    //    console.log(response);
+    //    const textNode = document.createTextNode(`${response.messageContent}`);
+    //    newElement.classList = "align-self-end";
+    //    newElement.appendChild(textNode);
+    //    myDiv.appendChild(newElement);
+    //    textArea.value = '';
+    //}
 
     let scroll = document.querySelector("#messageBox");
     scroll.scrollTop = scroll.scrollHeight;
