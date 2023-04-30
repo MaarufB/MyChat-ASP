@@ -1,28 +1,189 @@
-﻿<div class="container">
-    <div class="row p-1">
-        <div class="col-1">User</div>
-        <div class="col-5"><input type="text" id="userInput" /></div>
-    </div>
-    <div class="row p-1">
-        <div class="col-1">Message</div>
-        <div class="col-5"><input type="text" class="w-100" id="messageInput" /></div>
-    </div>
-    <div class="row p-1">
-        <div class="col-6 text-end">
-            <input type="button" id="sendButton" value="Send Message" />
-        </div>
-    </div>
-    <div class="row p-1">
-        <div class="col-6">
-            <hr />
-        </div>
-    </div>
-    <div class="row p-1">
-        <div class="col-6">
-            <ul id="messagesList"></ul>
+﻿<div class="row mt-0 h-100 justify-content-center" style="width: 100%; margin: 0;">
+    <div class="col-md-12">
+        <div class="row justify-content-center">
+            <div class="col-md-3 col-sm-3 col-lg-3 px-1 border" id="left-container">
+                <header class="left-container-header mt-2">
+                    <!-- Search existing message thead with the user -->
+                    <input id="search-convo" class="mt-0" type="text" placeholder="Search.....">
+                </header>
+                <!-- List of the message thread with the other users container -->
+                <div class="message-list-container" id="contact-list-container">
+                    @* <div class="inbox-container border">
+                    <div class="contact-avatar">
+                    <img src="./images/avatar.png" alt="Avatar">
+                    </div>
+                    <div class="contact-message-details">
+                    <h6>Master Fred</h6>
+                    <p style="font-style: italic;">This is a test message!!!!!</p>
+                    </div>
+                    </div> *@
+                </div>
+                <!-- <hr> -->
+            </div>
+            <div class="col-md-9 col-lg-9 col-sm-9 p-0 border shadow rounded">
+                <!-- Header for messaging thread -->
+                <header class="m-0 p-2 shadow" id="message-header">
+                    <div class="row m-0">
+                        <div class="col-1">
+                            <div class="contact-avatar">
+                                <img src="./images/avatar.png" alt="Avatar">
+                            </div>
+                        </div>
+                        <div class="col-10 align-self-center">
+                            <h5 class="" id="recepient-name">Main content</h5>
+                        </div>
+                    </div>
+                </header>
+                <!-- Message content main container -->
+                <div class="message-convo" style="height: 65vh" id="message-thread-container">
+                    <!-- message container this will be appended to the message-thread-container -->
+                    <div class="message-text-container rounded">
+                        <p>This is a sample message</p>
+                    </div>
+                    <div class="message-text-container rounded message-text-right">
+                        <p>This is a sample message</p>
+                    </div>
+                </div>
+                <!-- Send Message container  -->
+                <div class="message-controller-container mb-4">
+                    <input class="shadow" type="text" name="" id="message-input" placeholder="Type Message...">
+                    <button class="btn btn-danger" id="send-message">Send</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-@* <script src="~/js/signalr/dist/browser/signalr.js"></script> *@
-@* <script src="~/js/chat.js"></script> *@
+</div>
 
+<script>
+    const loadContactsUrl = "/contact/load-contacts";
+    const messagingContactUrl = '/Messaging/GetContacts';
+
+    // create DOM element for the message content container
+
+
+    const contactListContainer = document.getElementById('contact-list-container');
+
+    const createMessageContentContainerElement = (res) => {
+        // The main job of this function is to append element to the main message content.
+        // The message contents are the conversation of the current user and its contact
+        const messageMainContainer = document.getElementById('message-thread-container');
+        const messageContainer = document.createElement('div');
+        const messageTextContent = document.createElement('span');
+
+
+        for (let item of res) {
+            console.log(item.messageContent);
+        }
+
+
+    }
+
+    // This function is for dummy data only
+    const getDummyData = () => {
+        let data = [
+            {
+                id: 1,
+                senderUsername: "maarufb",
+                senderId: 1,
+                recepientUsername: "michaelj",
+                recepientId: 2,
+                messageContent: "Hi, do you have a minute bud?",
+                isLeft: false
+            },
+            {
+                id: 2,
+                senderUsername: "michaelj",
+                senderId: 2,
+                recepientUsername: "maarufb",
+                recepientId: 1,
+                messageContent: "Yes bud. Why?",
+                isLeft: true
+            },
+            {
+                id: 1,
+                senderUsername: "maarufb",
+                senderId: 1,
+                recepientUsername: "michaelj",
+                recepientId: 2,
+                messageContent: "I have a very",
+                isLeft: true
+            },
+        ]
+
+        return data;
+    }
+
+    const getMessageThread = () => {
+        // This is the initial implemtation. We'll be using a dummy data
+        // For the final implementation, this will call the actual API for messaging.
+        const response = getDummyData();
+
+
+
+    }
+
+    const createNavigateClickEvent = (clickableElement, contactId, userName) => {
+        const recepientName = document.getElementById('recepient-name');
+
+
+        clickableElement.addEventListener("click", () => {
+            recepientName.textContent = userName;
+
+            // create a function here to call the api to get the messages of the user
+            const resData = getDummyData();
+            createMessageContentContainerElement(resData);
+        });
+    }
+
+
+    const createContactContainer = (userName, contactId) => {
+        // for div containers
+        const parentDivContainer = document.createElement('div');
+        const avatarDivContainer = document.createElement('div');
+        const contactDivContainer = document.createElement('div');
+
+        createNavigateClickEvent(parentDivContainer, contactId, userName);
+
+        // for child containers
+        const avatarImgElement = document.createElement('img');
+        const contactNameElement = document.createElement('h6');
+        const contactRecentMessageElement = document.createElement('p');
+
+        // avatar
+        avatarImgElement.src = "./images/avatar.png";
+        avatarDivContainer.classList = "contact-avatar";
+        avatarDivContainer.appendChild(avatarImgElement);
+        parentDivContainer.appendChild(avatarDivContainer);
+
+        // textNode for userName
+        contactNameElement.textContent = userName;
+        contactRecentMessageElement.textContent = "This is just a test";
+
+        contactDivContainer.appendChild(contactNameElement);
+        contactDivContainer.appendChild(contactRecentMessageElement);
+
+        parentDivContainer.appendChild(contactDivContainer);
+        parentDivContainer.classList = 'inbox-container border';
+        contactListContainer.appendChild(parentDivContainer);
+    };
+
+    const loadContacts = async () => {
+
+        const response = await fetch(loadContactsUrl);
+        const responseJson = await response.json();
+
+        if (responseJson) {
+            for (let contact of responseJson) {
+                createContactContainer(contact.username, contact.contactId);
+            }
+        }
+
+        console.log(responseJson);
+
+        return responseJson;
+    }
+
+    loadContacts();
+
+</script>

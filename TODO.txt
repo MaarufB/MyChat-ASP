@@ -1,31 +1,8 @@
-Features:
-	
-1. Messaging 
-	The user must be friends with the person he/she wants to chat with.
-
-2. Friend Request
-	The user is able to search another users.	
-
-3. Authentication
-	Users must have an account to the system.
+TODO:
+- Create a javascript script to fetch Messages that have a convo with the current user. 
+- Sort all the list of convo by date. Get the recent message.
+- The list of convo must be clickable.
+- If it is being clicked, it will display all the conversation with the current user to the messaging content.
+- Unauthenticated logging in should be redirected to the login page.
 
 
-
-Features must be implemented in the futures.
-1. Can send an Image
-2. Is able to make a video call
-
-
-
-Models:
-
-Messaging Model
-User Model
-Connection Model
-
-
-Todo To create a message
-
-
-Note for 2 person thread message:
-I need to use group message for 2 persons
