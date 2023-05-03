@@ -1,8 +1,12 @@
 TODO:
-- Create a javascript script to fetch Messages that have a convo with the current user. 
-- Sort all the list of convo by date. Get the recent message.
-- The list of convo must be clickable.
-- If it is being clicked, it will display all the conversation with the current user to the messaging content.
-- Unauthenticated logging in should be redirected to the login page.
 
+- When the contact name is clicked then the message thread between users will be displayed.
+- Implement the messaging functionality
+- Create a custom login page and registration page.
+- The default page must be the login page(if the user is not authenticated!)
+- Make sure that the design is responsive to any device screen.
 
+Bug/s:
+
+There is an issue in signalR connection. If you try to connect and there are already 
+connections initialized. There will be an error.

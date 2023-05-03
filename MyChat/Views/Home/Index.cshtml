@@ -8,6 +8,7 @@
                 </header>
                 <!-- List of the message thread with the other users container -->
                 <div class="message-list-container" id="contact-list-container">
+                    @* This is the default layout for the contact *@
                     @* <div class="inbox-container border">
                     <div class="contact-avatar">
                     <img src="./images/avatar.png" alt="Avatar">
@@ -37,12 +38,12 @@
                 <!-- Message content main container -->
                 <div class="message-convo" style="height: 65vh" id="message-thread-container">
                     <!-- message container this will be appended to the message-thread-container -->
-                    <div class="message-text-container rounded">
-                        <p>This is a sample message</p>
+                    @* <div class="message-content-container message-text-left">
+                    <p id="message-content">This is a sample message</p>
                     </div>
-                    <div class="message-text-container rounded message-text-right">
-                        <p>This is a sample message</p>
-                    </div>
+                    <div class="message-content-container message-text-right">
+                    <p id="message-content">This is a sample message</p>
+                    </div> *@
                 </div>
                 <!-- Send Message container  -->
                 <div class="message-controller-container mb-4">
@@ -53,14 +54,97 @@
         </div>
     </div>
 </div>
-</div>
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script>
+    class MessagingHub {
+
+
+        constructor() {
+
+        }
+
+        onDisconnect() {
+
+        }
+
+        onConnected() {
+
+        }
+
+        addGroup() {
+
+        }
+
+        removeGroup() {
+
+        }
+
+        functionTest() {
+
+            console.log('This is from MessagingHubClass!!');
+        }
+
+    }
+</script>
 
 <script>
     const loadContactsUrl = "/contact/load-contacts";
     const messagingContactUrl = '/Messaging/GetContacts';
+    let isChatOpen = false;
+    let chatGroupName = null;
 
-    // create DOM element for the message content container
+    // signalR
+    let connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub")
+        .build();
 
+    const addToGroup = (groupName) => {
+        if (isChatOpen) {
+            connection.start().then(() => {
+                connection.invoke("JoinGroup", groupName)
+            });
+        }
+    }
+
+
+    const getGroupName = async (contactId) => {
+        const getGroupNameAPI = `/Messaging/GetGroupName/${contactId}`;
+        let responseData = null;
+
+        let messageHub = new MessagingHub();
+
+        messageHub.functionTest();
+
+        try {
+            const response = await fetch(getGroupNameAPI);
+            responseData = await response.json();
+
+        } catch (err) {
+            console.log(err);
+        }
+
+        console.log(`Group Name: ${responseData.groupName}`);
+        addToGroup(responseData.groupName);
+
+        return responseData;
+    }
+
+    const loadMessage = async (contactId) => {
+        const loadMessageUrl = '/Messaging/loadmessage';
+        let messages = null;
+
+        try {
+            const response = await fetch(`${loadMessageUrl}/${contactId}`);
+            messages = await response.json();
+
+            return messages;
+
+        } catch (error) {
+            console.log(error);
+        }
+
+        return messages;
+    }
 
     const contactListContainer = document.getElementById('contact-list-container');
 
@@ -75,75 +159,79 @@
         for (let item of res) {
             console.log(item.messageContent);
         }
-
-
     }
 
-    // This function is for dummy data only
-    const getDummyData = () => {
-        let data = [
-            {
-                id: 1,
-                senderUsername: "maarufb",
-                senderId: 1,
-                recepientUsername: "michaelj",
-                recepientId: 2,
-                messageContent: "Hi, do you have a minute bud?",
-                isLeft: false
-            },
-            {
-                id: 2,
-                senderUsername: "michaelj",
-                senderId: 2,
-                recepientUsername: "maarufb",
-                recepientId: 1,
-                messageContent: "Yes bud. Why?",
-                isLeft: true
-            },
-            {
-                id: 1,
-                senderUsername: "maarufb",
-                senderId: 1,
-                recepientUsername: "michaelj",
-                recepientId: 2,
-                messageContent: "I have a very",
-                isLeft: true
-            },
-        ]
+    const viewMessageHandler = async (resName) => {
 
-        return data;
+        console.log(`RecepientName: ${resName}`);
     }
 
-    const getMessageThread = () => {
-        // This is the initial implemtation. We'll be using a dummy data
-        // For the final implementation, this will call the actual API for messaging.
-        const response = getDummyData();
+    const displayMessage = async (messages) => {
+        const recepientName = document.getElementById('recepient-name');
+        const mainContainer = document.getElementById('message-thread-container');
+        
+        if(mainContainer.children.length > 0) {
+            let childElement = mainContainer.lastElementChild;
+            
+            while(childElement){
+                mainContainer.removeChild(childElement);
+                childElement = mainContainer.lastElementChild
+            }
+        }
 
+        for (let message of messages) {
+            const messageContentContainer = document.createElement('div');
+            const messageContent = document.createElement('p');
+            messageContent.classList = "message-content";
 
+            if (message.recipientUsername != recepientName.textContent) {
+                messageContentContainer.classList = "message-content-container";
+                messageContent.textContent = message.messageContent;
+                messageContentContainer.appendChild(messageContent);
+                mainContainer.appendChild(messageContentContainer);
 
-    }
+            } else {
+                messageContentContainer.classList = "message-content-container message-text-right"
+                messageContent.textContent = message.messageContent;
+                messageContentContainer.appendChild(messageContent);
+                mainContainer.appendChild(messageContentContainer);
+            
+            }
+        }
 
-    const createNavigateClickEvent = (clickableElement, contactId, userName) => {
+        let scroll = document.querySelector("#message-thread-container");
+        scroll.scrollTop = scroll.scrollHeight;
+        
+    };
+
+    const createNavigateClickEvent = async (clickableElement, contactId, userName) => {
         const recepientName = document.getElementById('recepient-name');
 
-
-        clickableElement.addEventListener("click", () => {
+        // make a asyncClickHandler for this button
+        clickableElement.addEventListener("click", async () => {
             recepientName.textContent = userName;
+            isChatOpen = true;
+            console.log("This is a fucking test");
+            // add to group
+            await getGroupName(contactId);
 
-            // create a function here to call the api to get the messages of the user
-            const resData = getDummyData();
-            createMessageContentContainerElement(resData);
+            loadMessage(contactId).then((messages) => {
+
+                 displayMessage(messages);
+
+            });
         });
+
     }
 
 
-    const createContactContainer = (userName, contactId) => {
+    const createContactContainer = async (userName, contactId) => {
         // for div containers
         const parentDivContainer = document.createElement('div');
         const avatarDivContainer = document.createElement('div');
         const contactDivContainer = document.createElement('div');
 
-        createNavigateClickEvent(parentDivContainer, contactId, userName);
+
 
         // for child containers
         const avatarImgElement = document.createElement('img');
@@ -166,6 +254,10 @@
         parentDivContainer.appendChild(contactDivContainer);
         parentDivContainer.classList = 'inbox-container border';
         contactListContainer.appendChild(parentDivContainer);
+
+        await createNavigateClickEvent(parentDivContainer, contactId, userName);
+
+    @* parentDivContainer.addEventListener('click', viewMessageHandler); *@
     };
 
     const loadContacts = async () => {
@@ -175,12 +267,10 @@
 
         if (responseJson) {
             for (let contact of responseJson) {
-                createContactContainer(contact.username, contact.contactId);
+                await createContactContainer(contact.username, contact.contactId);
             }
         }
-
-        console.log(responseJson);
-
+        
         return responseJson;
     }
 

@@ -41,6 +41,7 @@ namespace MyChat.Controllers
 
             if(otherUser == null)
             {
+                
                 return RedirectToAction($"Message");
             }
 
