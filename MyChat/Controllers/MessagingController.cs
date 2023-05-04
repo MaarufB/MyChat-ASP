@@ -84,7 +84,6 @@ namespace MyChat.Controllers
 
         }
 
-
         [HttpGet]
         public async Task<ActionResult<List<LoadMessageViewModel>>> LoadMessage(string id)
         {
@@ -154,6 +153,24 @@ namespace MyChat.Controllers
             };
 
             return groupName;
+        }
+
+        [HttpGet]
+        public async Task<object> InitialMessagingPayload(string id)
+        {
+            var otherUser = _userManager.Users
+                                    .Where(i => i.Id == id)
+                                    .FirstOrDefault();
+
+            var currentUser = await GetCurrentUser();
+            
+            return new 
+            {
+                SenderId = currentUser.Id,
+                SenderUsername = currentUser.UserName,
+                RecipientId = otherUser.Id,
+                RecipientUsername = otherUser.UserName
+            };
         }
 
 

@@ -137,6 +137,7 @@ namespace MyChat.Hubs
             Console.WriteLine(messageLogInfo);
 
             await Clients.Group(groupName).SendAsync("ReceiveMessage", message);
+            
 
             return isSavedSuccess != 0;
         }
