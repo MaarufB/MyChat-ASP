@@ -10,3 +10,37 @@ Bug/s:
 
 There is an issue in signalR connection. If you try to connect and there are already 
 connections initialized. There will be an error.
+
+
+Create a class for Contact Template
+- paren contact-list-container (container/div) is already existing. Just need to append below elements
+- create a contact-container and have child elements
+	- avatar-container(contact-avatar) and have a child container
+		- img
+	- contact-info-container and have children elements
+		- h6 for contact username
+		- p for recent message
+
+
+
+
+Create a class for Messaging Template
+	
+Create a class for MessageHub
+
+
+TODO:
+- Create an API Service for the following
+    * Get the group name
+    * Create group name
+    * Get Messages between the two users
+    * Get Contacts
+
+Architecture:
+    ContactTemplate
+    MessagingTemplate
+
+    API Services
+    
+
+

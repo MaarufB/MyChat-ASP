@@ -139,8 +139,12 @@
         }
     }
 
-    const addToGroup = (groupName) => {
+    const addToGroup = async (groupName) => {
         if (isChatOpen) {
+            if(connection){
+                await connection.stop();
+            }
+
             connection.start().then(() => {
                 connection.invoke("JoinGroup", groupName)
             });
@@ -299,6 +303,14 @@
                 await createContactContainer(contact.username, contact.contactId);
             }
         }
+
+        //fetch(loadContactsUrl).then((response) => {
+        //    if(resonse){
+        //        for(let contact of response){
+        //            await createContactContainer(contact.username, contact.contactId);
+        //        }
+        //    }
+        //});
 
         return responseJson;
     }

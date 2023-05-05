@@ -1,11 +1,311 @@
-@page
-@model MyChat.Views.Messaging.Index
-@{
-    ViewData["Title"] = "Index";
-}
-
-<h1>@ViewData["Title"]</h1>
-
-<div>
-    
+<div class="row mt-0 h-100 justify-content-center" style="width: 100%; margin: 0;">
+    <div class="col-md-11">
+        <div class="row justify-content-center">
+            <div class="col-md-4 col-sm-4 col-lg-4 px-1 border" id="left-container">
+                <header class="left-container-header mt-3 mb-4">
+                    <input id="search-convo" class="mt-0" type="text" placeholder="Search Contact...">
+                </header>
+                <div class="message-list-container" id="contact-list-container"></div>
+            </div>
+            <div class="col-md-8 col-lg-8 col-sm-8 p-0 border shadow rounded">
+                <header class="m-0 p-2 shadow" id="message-header">
+                    <div class="row m-0">
+                        <div class="col-1">
+                            <div class="contact-avatar">
+                                <img src="./images/avatar.png" alt="Avatar">
+                            </div>
+                        </div>
+                        <div class="col-10 align-self-center">
+                            <h5 class="" id="recepient-name">
+                            </h5>
+                        </div>
+                    </div>
+                </header>
+                <div class="message-convo" style="height: 65vh" id="message-thread-container">
+                </div>
+                <div class="message-controller-container mb-4">
+                    <input type="text" name="" id="message-input" placeholder="Type Message...">
+                    <button class="btn btn-danger" id="send-message">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script>
+ 
+
+</script>
+
+
+<script>
+    const loadContactsUrl = "/contact/load-contacts";
+    const messagingContactUrl = '/Messaging/GetContacts';
+    const initialMessagingPayloadUrl = "/Messaging/InitialMessagingPayload";
+
+    let initializedMessagingPayload = null;
+
+    let isChatOpen = false;
+    let chatGroupName = null;
+
+    // 
+    const contactListContainer = document.getElementById('contact-list-container');
+    const recepientName = document.getElementById('recepient-name');
+    const mainContainer = document.getElementById('message-thread-container');
+    const messageMainContainer = document.getElementById('message-thread-container');
+
+
+
+    let connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub")
+        .build();
+
+    // receiving new message
+    connection.on("ReceiveMessage", async (message) => {
+        console.log("Message received! " + message.messageContent);
+        // the message received should be appended to the message section
+        const createdMessageContainer = document.createElement('div');
+        const createdMessageText = document.createElement('p');
+        createdMessageText.classList = "message-content";
+
+        console.log(`recipient: ${recepientName.textContent} === ${message.recipientUsername}`);
+
+        if (recepientName.textContent === message.recipientUsername) {
+            createdMessageContainer.classList = "message-content-container message-text-right";
+            createdMessageText.textContent = message.messageContent;
+            createdMessageContainer.appendChild(createdMessageText);
+
+        } else {
+            createdMessageContainer.classList = "message-content-container message-text-left";
+            createdMessageText.textContent = message.messageContent;
+            createdMessageContainer.appendChild(createdMessageText);
+        }
+
+
+        messageMainContainer.appendChild(createdMessageContainer);
+
+        let scroll = document.querySelector("#message-thread-container");
+        scroll.scrollTop = scroll.scrollHeight;
+
+    });
+
+    const sendMessageHandler = async () => {
+        console.log('Send Message Handler');
+
+        if (chatGroupName.groupName != null) {
+            console.log("chatGroupNameIsNotNull");
+            try {
+                if (initializedMessagingPayload) {
+                    console.log("Message Sending");
+                    let inputMessage = document.getElementById('message-input');
+
+                    if (inputMessage.value === "" || inputMessage.value === null) {
+                        console.log(`input Message is empty`)
+                        return;
+                    }
+
+                    const messagePayload = {
+                        SenderId: initializedMessagingPayload.senderId,
+                        SenderUsername: initializedMessagingPayload.senderUsername,
+                        RecipientId: initializedMessagingPayload.recipientId,
+                        RecipientUsername: initializedMessagingPayload.recipientUsername,
+                        MessageContent: inputMessage.value
+                    };
+
+                    await connection.invoke("SendMessageToGroup",
+                        chatGroupName.groupName,
+                        messagePayload);
+
+                    document.getElementById('message-input').value = "";
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        }
+    };
+
+    const sendMessageButton = document.getElementById('send-message');
+    sendMessageButton.addEventListener('click', sendMessageHandler);
+
+    const getInitialMessagingPayload = async (otherUser) => {
+        try {
+            const response = await fetch(`${initialMessagingPayloadUrl}/${otherUser}`);
+            return await response.json();
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const addToGroup = async (groupName) => {
+        if (isChatOpen) {
+            if(connection){
+                await connection.stop();
+            }
+
+            connection.start().then(() => {
+                connection.invoke("JoinGroup", groupName)
+            });
+        }
+    }
+
+    const getGroupName = async (contactId) => {
+        const getGroupNameAPI = `/Messaging/GetGroupName/${contactId}`;
+        let responseData = null;
+
+        try {
+            const response = await fetch(getGroupNameAPI);
+            responseData = await response.json();
+            chatGroupName = responseData;
+
+        } catch (err) {
+            console.log(err);
+        }
+
+        console.log(`Group Name: ${responseData.groupName}`);
+        addToGroup(responseData.groupName);
+
+        return responseData;
+    }
+
+    const loadMessage = async (contactId) => {
+        const loadMessageUrl = '/Messaging/loadmessage';
+        let messages = null;
+
+        try {
+            const response = await fetch(`${loadMessageUrl}/${contactId}`);
+            messages = await response.json();
+
+            return messages;
+
+        } catch (error) {
+            console.log(error);
+        }
+
+        return messages;
+    }
+
+
+
+    const createMessageContentContainerElement = (res) => {
+        // The main job of this function is to append element to the main message content.
+        // The message contents are the conversation of the current user and its contact
+        const messageContainer = document.createElement('div');
+        const messageTextContent = document.createElement('span');
+
+
+        for (let item of res) {
+            console.log(item.messageContent);
+        }
+    }
+
+    const viewMessageHandler = async (resName) => {
+
+        console.log(`RecepientName: ${resName}`);
+    }
+
+    const displayMessage = async (messages) => {
+
+
+        if (mainContainer.children.length > 0) {
+            let childElement = mainContainer.lastElementChild;
+
+            while (childElement) {
+                mainContainer.removeChild(childElement);
+                childElement = mainContainer.lastElementChild
+            }
+        }
+
+        for (let message of messages) {
+            const messageContentContainer = document.createElement('div');
+            const messageContent = document.createElement('p');
+            messageContent.classList = "message-content";
+
+            if (message.recipientUsername != recepientName.textContent) {
+                messageContentContainer.classList = "message-content-container message-text-left";
+                messageContent.textContent = message.messageContent;
+                messageContentContainer.appendChild(messageContent);
+                mainContainer.appendChild(messageContentContainer);
+
+            } else {
+                messageContentContainer.classList = "message-content-container message-text-right"
+                messageContent.textContent = message.messageContent;
+                messageContentContainer.appendChild(messageContent);
+                mainContainer.appendChild(messageContentContainer);
+
+            }
+        }
+
+        let scroll = document.querySelector("#message-thread-container");
+        scroll.scrollTop = scroll.scrollHeight;
+
+    };
+
+    const createNavigateClickEvent = async (clickableElement, contactId, userName) => {
+        const recepientName = document.getElementById('recepient-name');
+        
+        // make a asyncClickHandler for this button
+        clickableElement.addEventListener("click", async () => {
+            recepientName.textContent = userName;
+            isChatOpen = true;
+            // add to group
+            await getGroupName(contactId);
+            initializedMessagingPayload = await getInitialMessagingPayload(contactId);
+            console.log(initializedMessagingPayload);
+
+            const messages = await loadMessage(contactId);
+            displayMessage(messages);
+        });
+
+    }
+
+    const createContactContainer = async (userName, contactId) => {
+        // for div containers
+        const parentDivContainer = document.createElement('div');
+        const avatarDivContainer = document.createElement('div');
+        const contactDivContainer = document.createElement('div');
+
+        // for child containers
+        const avatarImgElement = document.createElement('img');
+        const contactNameElement = document.createElement('h6');
+        const contactRecentMessageElement = document.createElement('p');
+
+        // avatar
+        avatarImgElement.src = "./images/avatar.png";
+        avatarDivContainer.classList = "contact-avatar";
+        avatarDivContainer.appendChild(avatarImgElement);
+        parentDivContainer.appendChild(avatarDivContainer);
+
+        // textNode for userName
+        contactNameElement.textContent = userName;
+        contactRecentMessageElement.textContent = "This is just a test";
+
+        contactDivContainer.appendChild(contactNameElement);
+        contactDivContainer.appendChild(contactRecentMessageElement);
+
+        parentDivContainer.appendChild(contactDivContainer);
+        parentDivContainer.classList = 'contact-container border';
+        contactListContainer.appendChild(parentDivContainer);
+
+        await createNavigateClickEvent(parentDivContainer, contactId, userName);
+    };
+
+    const loadContacts = async () => {
+
+        const response = await fetch(loadContactsUrl);
+        const responseJson = await response.json();
+
+        if (responseJson) {
+            for (let contact of responseJson) {
+                await createContactContainer(contact.username, contact.contactId);
+            }
+        }
+
+        return responseJson;
+    }
+    
+    loadContacts();
+
+</script>

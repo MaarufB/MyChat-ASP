@@ -40,8 +40,13 @@ namespace MyChat.Controllers
 
         public ActionResult Index()
         {
-
             return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
         #region API CALLS
@@ -190,8 +195,6 @@ namespace MyChat.Controllers
             {
                 messageSender = sender.Split("@")[0];
                 messageRecipient = recipient.Split("@")[0];
-
-
             }
 
             return GetGroupName(messageSender, messageRecipient);

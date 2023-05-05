@@ -132,6 +132,14 @@
 	/* border: 2px; */
 	/* border: 2px solid red; */
 }
+.contact-container{
+	display: flex;
+	margin: 5px;
+	padding: 5px;
+	/* border: 2px; */
+	/* border: 2px solid red; */
+}
+
 
 .contact-message-details{
 	margin-left: 5px;
