@@ -3,7 +3,8 @@
         <div class="row justify-content-center">
             <div class="col-md-4 col-sm-4 col-lg-4 px-1 border" id="left-container">
                 <header class="left-container-header mt-3 mb-4">
-                    <input id="search-convo" class="mt-0" type="text" placeholder="Search Contact...">
+                    <input id="search-convo" class="mt-0 col" type="text" placeholder="Search Contact...">
+                    <button class="col">Add Contact</button>
                 </header>
                 <div class="message-list-container" id="contact-list-container"></div>
             </div>
@@ -40,42 +41,42 @@
 
 <script>
     class GroupNameModel {
-        constructor(){
+        constructor() {
             this.groupName = null;
         }
 
-        updateGroupNameModel(groupName){
-            if(groupName) {
+        updateGroupNameModel(groupName) {
+            if (groupName) {
                 this.groupName = groupName;
             }
 
             return this.groupName;
         }
 
-        getGroupName(){
+        getGroupName() {
             return this.groupName;
         }
     }
 
     class MessagePayloadModel {
-        constructor(){
+        constructor() {
             this.messagePayload = {
                 SenderId: null,
                 SenderUsername: null,
                 RecipientId: null,
                 RecipientUsername: null,
                 MessageContent: null
-            }   
+            }
         }
 
-        updatePayload(initialPayload){
+        updatePayload(initialPayload) {
             this.messagePayload.SenderId = initialPayload.senderId;
             this.messagePayload.SenderUsername = initialPayload.senderUsername;
             this.messagePayload.RecipientId = initialPayload.recipientId;
             this.messagePayload.RecipientUsername = initialPayload.recipientUsername;
         }
 
-        getUpdatedMessagePayload(){
+        getUpdatedMessagePayload() {
             return this.messagePayload;
         }
 
@@ -89,36 +90,38 @@
 
         constructor(groupNameModel, messagePayloadModel) {
             this.connection = new signalR.HubConnectionBuilder()
-                                         .withUrl("/chatHub")
-                                         .build();
+                .withUrl("/chatHub")
+                .build();
 
             this.sendButton = document.getElementById('send-message');
             this.messageInput = document.getElementById('message-input');
             this.apiService = new ApiService();
             this.groupNameModel = groupNameModel;
             this.messagePayloadModel = messagePayloadModel;
+
+            this.messageParentContainer = document.getElementById('message-thread-container');
+            this.recipientName = document.getElementById('recepient-name');
         }
-        
-        async startSendMessageHandler(){
+
+        async startSendMessageHandler() {
             this.sendButton.addEventListener('click', async () => {
                 let payload = this.messagePayloadModel.getUpdatedMessagePayload()
                 const groupName = this.groupNameModel.getGroupName();
 
-                if(this.messageInput.value == null || this.messageInput.value == ""){
+                if (this.messageInput.value == null || this.messageInput.value == "") {
                     return;
                 }
 
                 payload.MessageContent = this.messageInput.value;
-                
-                
+
                 await this.connection.invoke("SendMessageToGroup", groupName, payload);
                 this.messageInput.value = "";
-    
+
             })
             return this.sendButton;
         }
 
-        async createHubConnection(groupName){
+        async createHubConnection(groupName) {
 
             await this.stopHubConnection();
 
@@ -127,12 +130,30 @@
             });
 
         }
-        
-        async getIncomingMessage(){
-            this.hubConnection().on("ReceiveMessage", async (message) => {
-                // call the message template here to append the message
-                console.log(message);
-            })
+
+        async getIncomingMessage() {
+            this.connection.on("ReceiveMessage", async (message) => {
+                const createdMessageContainer = document.createElement('div');
+                const createdMessageText = document.createElement('p');
+                
+                createdMessageText.classList = "message-content";
+
+                if (this.recipientName.textContent === message.recipientUsername) {
+                    createdMessageContainer.classList.add("message-content-container", "message-text-right");
+                    createdMessageText.textContent = message.messageContent;
+                    createdMessageContainer.appendChild(createdMessageText);
+
+                } else {
+                    createdMessageContainer.classList.add("message-content-container", "message-text-left");
+                    createdMessageText.textContent = message.messageContent;
+                    createdMessageContainer.appendChild(createdMessageText);
+                }
+
+                this.messageParentContainer.appendChild(createdMessageContainer)
+
+                this.messageParentContainer.scrollTop = this.messageParentContainer.scrollHeight;
+
+            });
         }
 
         async stopHubConnection() {
@@ -163,7 +184,6 @@
 
 </script>
 
-
 <!-- ContactTemplate Script -->
 <script>
     class ContactTemplate {
@@ -175,10 +195,9 @@
         }
 
         createContactElement(username, contactId, contactImg = this._avatarImgPath) {
-            // create the contact container which contain avatar and contact info
             const createdContactContainer = document.createElement('div');
             createdContactContainer.classList.add("contact-container", "border");
-            // call the create avatar method to create an element
+
             const avatar = this.createAvatarElement(this._avatarImgPath);
             createdContactContainer.appendChild(avatar);
 
@@ -186,14 +205,12 @@
             createdContactContainer.appendChild(createdContactInfoContainer);
 
             this.contactParentContainer.appendChild(createdContactContainer);
-            @* console.log("CreateContectElemet being invoked/") *@
             this.changeRecipientNameHandler(createdContactContainer, username);
-            
+
             return createdContactContainer;
         }
 
         createAvatarElement(contactImg) {
-            // create the div wrapper for avatar
             const createdAvatarContainer = document.createElement('div');
             const createdAvatarImgElement = document.createElement('img');
             createdAvatarContainer.classList.add("contact-avatar");
@@ -208,12 +225,10 @@
             contactId,
             recentMessage = "Recent Message Test!") {
 
-            // create contactInfoContainer
             const createdContactInfoContainer = document.createElement('div');
             const createdContactUsernameElement = document.createElement('h6');
             const createdContactRecentMessageElement = document.createElement('p');
 
-            // TODO: add class for contact Username and recent message css style
             createdContactUsernameElement.textContent = contactUsername;
             createdContactRecentMessageElement.textContent = recentMessage;
 
@@ -223,16 +238,10 @@
             return createdContactInfoContainer;
         }
 
-        // temporary click event handler 
-
         async changeRecipientNameHandler(contactContainer, username) {
             contactContainer.addEventListener('click', async () => {
                 this.recipientName.textContent = username;
             })
-        }
-
-        async contactTestMethod() {
-            console.log("Test");
         }
     }
 </script>
@@ -245,14 +254,9 @@
             this.recipientName = document.getElementById('recepient-name');
         }
 
-        // this function will be used when loading and receiving
         createMessageTemplate(message) {
-            // remove existing elements
-
             const createdMessageContainer = document.createElement('div');
             const createdMessageContentElement = document.createElement('p');
-
-            @* createdMessageContainer.classList.add("message-content-container"); *@
 
             createdMessageContentElement.textContent = message.messageContent;
             createdMessageContentElement.classList.add("message-content");
@@ -260,19 +264,15 @@
             if (message.recipientUsername === this.recipientName.textContent) {
                 createdMessageContainer.classList.add("message-content-container", "message-text-right");
             } else {
-                createdMessageContainer.classList.add("message-content-container","message-text-left")
+                createdMessageContainer.classList.add("message-content-container", "message-text-left")
             }
 
             createdMessageContainer.appendChild(createdMessageContentElement);
             this.messageParentContainer.appendChild(createdMessageContainer);
-         
+
             this.messageParentContainer.scrollTop = this.messageParentContainer.scrollHeight;
 
             return this.messageParentContainer;
-        }
-
-        appendMessage(message, messageContainerInstance) {
-            // TODO
         }
 
         getMessageParentContainer() {
@@ -280,7 +280,7 @@
         }
 
         removeExistingMessages() {
-            if(this.messageParentContainer.children.length == 0) return;
+            if (this.messageParentContainer.children.length == 0) return;
 
             let childement = this.messageParentContainer.lastElementChild;
 
@@ -383,14 +383,12 @@
         const messageTemplate = new MessageTemplate();
         const messageHubService = new MessagingHubService(groupNameModel, messagePayloadModel);
 
-
-
-
         const response = await apiService.getContacts();
         // create contact template
-        for(const contactItem of response){
+        for (const contactItem of response) {
+
             const createdContactTemplate = contactTemplate.createContactElement(contactItem.username, contactItem.contactId);
-            
+
             // creating an events to the contact when it is being clicked!!!
             createdContactTemplate.addEventListener('click', async () => {
 
@@ -398,26 +396,26 @@
                 // add group connection
                 const { groupName } = await apiService.getGroupName(contactItem.contactId);
                 const initialPayload = await apiService.getInitialPayload(contactItem.contactId);
-                
+
                 messagePayloadModel.updatePayload(initialPayload);
                 groupNameModel.updateGroupNameModel(groupName);
                 // call the messagehub to add groupname
                 await messageHubService.createHubConnection(groupName);
-                
+
 
                 // remove all existing messages
                 messageTemplate.removeExistingMessages();
 
-                for(const message of messages){
+                for (const message of messages) {
                     messageTemplate.createMessageTemplate(message)
                 }
             })
         }
 
         await messageHubService.startSendMessageHandler()
-        
+        await messageHubService.getIncomingMessage()
     }
 
-    mainApp(); 
-    // TODO: When there is a message received, append it to the message thread
+    mainApp();
+
 </script>
