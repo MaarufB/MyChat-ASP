@@ -54,7 +54,44 @@ namespace MyChat.Controllers
             
             return View(new {ContactName = ""});
         }
+        
+        [HttpPost]
+        [Route("messaging/add-contact")]
+        public async Task<IActionResult> AddContact(AddContactViewModel contactPayload)
+        {       
+            // var currentUser = await GetCurrentUser();
 
+            // var contact = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == contactPayload.ContactId);
+
+            // var contactAdded = new Contact
+            // {
+            //     ContactOwnerId = currentUser.Id,
+            //     ContactOwnerUsername = currentUser.UserName,
+            //     ContactOwner = currentUser,
+            //     ContactPersonId = contact.Id,
+            //     ContactPersonUsername = contact.UserName,
+            //     ContactPerson = contact
+            // };
+
+            // var isSuccess = await _contactRepository.CreateAsync(contactAdded);
+            
+            // if(isSuccess < 1) return BadRequest();
+
+            // var addContactResponse = new AddContactResponseViewModel
+            // {
+            //     AddedContactId = contactAdded.ContactPersonId,
+            //     IsSuccess = true
+            // };
+
+            // Test API
+            var addContactTest = new AddContactResponseViewModel
+            {
+                AddedContactId = contactPayload.ContactId,
+                IsSuccess = true
+            };
+
+            return Ok(addContactTest);
+        }
 
     #region API
         [HttpGet, ActionName("load-contacts")]

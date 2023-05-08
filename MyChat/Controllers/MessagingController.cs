@@ -90,6 +90,7 @@ namespace MyChat.Controllers
         }
 
         [HttpGet]
+        [Route("messaging/load-messages/{id}")]
         public async Task<ActionResult<List<LoadMessageViewModel>>> LoadMessage(string id)
         {
             var otherUser = _userManager.Users
@@ -137,7 +138,7 @@ namespace MyChat.Controllers
         }
 
         [HttpGet]
-        // [AllowAnonymous]
+        [Route("messaging/get-groupname/{id}")]
         public async Task<ActionResult<GroupNameVM>> GetGroupName(string id)
         {
             Console.WriteLine($"RecipientId: {id}");
@@ -160,7 +161,7 @@ namespace MyChat.Controllers
             return groupName;
         }
 
-        [HttpGet]
+        [HttpGet, ActionName("initial-message-payload")]
         public async Task<object> InitialMessagingPayload(string id)
         {
             var otherUser = _userManager.Users
