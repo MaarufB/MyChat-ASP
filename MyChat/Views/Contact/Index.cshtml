@@ -1,0 +1,13 @@
+@model IEnumerable<MyChat.ViewModels.Contact.ContactViewModel>
+
+<div class="row justify-content-center m-0 border shadow">
+    <div class="col-8 mt-4 mb-4 border">
+        @foreach (var item in Model)
+        {
+            <div class="container">
+                @* <p>@item.UserId</p> *@
+                <p>@item.Username</p>
+            </div>   
+        }
+    </div>
+</div>

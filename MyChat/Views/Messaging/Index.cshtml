@@ -1,19 +1,20 @@
-<div class="row mt-0 h-100 justify-content-center" style="width: 100%; margin: 0;">
-    <div class="col-md-11">
-        <div class="row justify-content-center">
-            <div class="col-md-4 col-sm-4 col-lg-4 px-1 border" id="left-container">
+<div class="row mt-0 justify-content-center" id="messaging-main-container">
+    <div class="col mt-0">
+        <div class="row justify-content-center" style="">
+            <div class="col-md-3 col-sm-3 col-lg-3 px-1 border" id="left-container">
                 <header class="left-container-header mt-3 mb-4">
                     <input id="search-convo" class="mt-0 col" type="text" placeholder="Search Contact...">
-                    <button class="col">Add Contact</button>
+                    @* <button id="modal-button" type="button" class="btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#staticBackdrop">Add Contact</button> *@
                 </header>
                 <div class="message-list-container" id="contact-list-container"></div>
             </div>
-            <div class="col-md-8 col-lg-8 col-sm-8 p-0 border shadow rounded">
+            <div class="col-md-9 col-lg-9 col-sm-9 p-0 border shadow rounded">
                 <header class="m-0 p-2 shadow" id="message-header">
                     <div class="row m-0">
                         <div class="col-1">
                             <div class="contact-avatar">
-                                <img src="./images/avatar.png" alt="Avatar">
+                                <img src="/images/avatar.png" alt="Avatar">
                             </div>
                         </div>
                         <div class="col-10 align-self-center">
@@ -24,7 +25,7 @@
                 </header>
                 <div class="message-convo" style="height: 65vh" id="message-thread-container">
                 </div>
-                <div class="message-controller-container mb-4">
+                <div class="message-controller-container mb-4 border shadow rounded">
                     <input type="text" name="" id="message-input" placeholder="Type Message...">
                     <button class="btn btn-danger" id="send-message">
                         Send
@@ -33,9 +34,88 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal -->
+    <div class="modal modal-dialog-scrollable" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Add Contacts</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body border" id="contact-modal-body" style="height: 60vh;">
+                    <input id="search-convo" class="mt-0 col" type="text" placeholder="Search Contact...">
+                </div>
+                @* <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Understood</button>
+                </div> *@
+            @* <button class="btn btn-primary" type="button">Next</button> *@
+            </div>
+
+        </div>
+    </div>
 </div>
 
+
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script>
+    class ContactModalTemplate{
+        
+        constructor(){
+            this.apiService = new ApiService();
+            this.contactModalBody = document.getElementById("contact-modal-body");
+        }
+
+        async runContactModal(){
+            const contacts = await this.apiService.getContacts();
+            
+            console.log("Run Modal is Running!");
+            // need to loop throught the contacts
+            if(contacts){
+                console.log(`contacts is running!`);
+                for(const contact of contacts){
+                    const contactContainerClassList = ["m-3", "p-2", "border", "d-flex", "justify-content-between", "align-items-center", "flex-wrap"]
+                    const creatededContactContainer = this.createElement("div", contactContainerClassList);
+
+                    // Username
+                    const contactUsernameClassList = ["contact-username"];
+                    const createdContactUsernameElement = this.createElement("h6", contactUsernameClassList);
+                    createdContactUsernameElement.textContent = contact.username;
+
+                    // button
+                    const contactButtonClassList = ["btn", "btn-primary"];
+                    const createdAddContactButton = this.createElement("button", contactButtonClassList);
+                    createdAddContactButton.textContent = "Add To Contact";
+
+                    creatededContactContainer.appendChild(createdContactUsernameElement);
+                    creatededContactContainer.appendChild(createdAddContactButton);
+                    this.contactModalBody.appendChild(creatededContactContainer);
+                }
+
+            }
+
+        }
+
+        createElement(htmlTag, classList){
+            let newHtmlTag = document.createElement(htmlTag);
+            if(classList){
+                for(const item of classList){
+                    newHtmlTag.classList.add(item);
+                }
+            }
+            return newHtmlTag;
+        }
+
+        displayAllUsers(){
+
+        }
+
+    }
+</script>
+
+
 
 <!-- Messaging Hub Script -->
 
@@ -108,7 +188,7 @@
                 let payload = this.messagePayloadModel.getUpdatedMessagePayload()
                 const groupName = this.groupNameModel.getGroupName();
 
-                if (this.messageInput.value == null || this.messageInput.value == "") {
+                if (this.messageInput.value == null || this.messageInput.value == "" || this.recipientName.textContent == "" || this.recipientName.textContent == null) {
                     return;
                 }
 
@@ -135,7 +215,7 @@
             this.connection.on("ReceiveMessage", async (message) => {
                 const createdMessageContainer = document.createElement('div');
                 const createdMessageText = document.createElement('p');
-                
+
                 createdMessageText.classList = "message-content";
 
                 if (this.recipientName.textContent === message.recipientUsername) {
@@ -418,4 +498,14 @@
 
     mainApp();
 
+</script>
+
+<script>
+    let modalButton = document.getElementById('modal-button');
+    let contactModalBody = document.getElementById('contact-container');
+    const contactModalTemplate = new ContactModalTemplate();
+
+    modalButton.addEventListener('click', () => {
+        contactModalTemplate.runContactModal();
+    })
 </script>

@@ -21,13 +21,21 @@
 	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
 	/* background-color: #D62929; */
 }
+#messaging-main-container{
+	/* border: 2px solid red; */
+	margin: 0px;
+	height: 90vh;
+	width: 100%;
+}
+
 
 .text-white{
     color: white;
 }
 
 #left-container{
-	height: 38rem; 
+	/* height: 38rem;  */
+	height: inherit;
 	background-color: #FFFF;
 }
 
@@ -120,9 +128,9 @@
   }
   
 .message-list-container{
-	/* border: 2px solid red; */
-	/* padding: 5px; */
-	/* margin: 5px; */
+	width: 100%;
+	padding: 5px;
+	/* margin: 2	px; */
 }
 
 .inbox-container{
@@ -162,8 +170,8 @@
 }
 
 .message-content-container{
-	/* width: 20rem; */
-	max-width: 40rem;
+	/* max-width: 40rem; */
+	max-width: 80%;
 	
 	/* min-width: 10rem; */
 	/* border: 2px solid red; */
@@ -186,12 +194,8 @@
 }
 
 .message-content{
-	/* padding: 10px; */
-	/* border: 2px solid green; */
 	margin: 5px 20px;
-	/* overflow-y: scroll; */
-	width: fit-content;
-	/* text-align: center; */
+	word-wrap: break-word;
 }
 
 .message-controller-container{

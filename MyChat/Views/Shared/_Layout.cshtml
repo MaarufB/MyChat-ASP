@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<AppIdentityUser> SignInManager
+@inject UserManager<AppIdentityUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -11,30 +15,43 @@
 </head>
 
 <body>
-  <header class="">
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow
-  mb-3">
+  <header>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-0">
       <div class="container-fluid">
-        <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MyChat</a>
+        @if (SignInManager.IsSignedIn(User))
+        {
+          <a class="navbar-brand" asp-controller="Messaging" asp-action="Index">MyChat</a>
+        }
+        else
+        {
+          <a class="navbar-brand" asp-controller="Account" asp-action="Login">MyChat</a>
+        }
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
           aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
-          @* <ul class="navbar-nav flex-grow-1">
-            <li class="nav-item">
-              <a class="nav-link text-dark" asp-area="" asp-controller="DummyMessage" asp-action="Index">Messaging</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Users</a>
-            </li>
-          </ul> *@
+          @if (SignInManager.IsSignedIn(User))
+          {
+            <ul class="navbar-nav flex-grow-1">
+              <li class="nav-item">
+                <a class="nav-link text-dark" asp-controller="Messaging" asp-action="Index">Messaging</a>
+              </li>
+              <li class="nav-item">
+                @* <a class="nav-link text-dark" asp-area="" asp-controller="Contact" asp-action="Index">Contacts</a> *@
+                <a class="nav-link text-dark" id="modal-button" type="button" data-bs-toggle="modal"
+                        data-bs-target="#staticBackdrop" >Contacts</a>
+                @* <button id="modal-button" type="button" class="btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#staticBackdrop">Add Contact</button> *@
+              </li>
+            </ul>
+          }
           <partial name="_LoginPartial" />
         </div>
       </div>
     </nav>
   </header>
-  <main class="p-0 m-0" style="" role="main">
+  <main style="" role="main">
     @RenderBody()
   </main>
 

@@ -9,24 +9,50 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MyChat.Interfaces;
 using MyChat.Models;
+using MyChat.ViewModels.Contact;
 using MyChat.ViewModels.ContactViewModel;
 
 namespace MyChat.Controllers
 {
     [Authorize]
-    // [Route("[controller]/[action]")]
     public class ContactController : BaseController
     {
         private readonly UserManager<AppIdentityUser> _userManager;
-        public ContactController(UserManager<AppIdentityUser> userManager)
+        private readonly IBaseRepository<Contact> _contactRepository;
+        
+        public ContactController(UserManager<AppIdentityUser> userManager,
+                                 IBaseRepository<Contact> contactRepository)
         {
             _userManager = userManager;
+            _contactRepository = contactRepository;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var currentUser = await GetCurrentUser();
+            var getAllUsers = await _userManager.Users.Where(x => x.Id != currentUser.Id).ToListAsync();
+            
+            var listOfUser = new List<ContactViewModel>();
+
+            foreach(var item in getAllUsers)
+            {
+                listOfUser.Add(new ContactViewModel
+                {
+                    UserId = item.Id,
+                    Username = item.UserName
+                });
+            }
+
+            return View(listOfUser);
+        }
+
+        [HttpPost]
+        public IActionResult Search(string userName)
+        {
+            
+            return View(new {ContactName = ""});
         }
 
 
