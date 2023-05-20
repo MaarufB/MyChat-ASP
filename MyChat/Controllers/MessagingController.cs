@@ -50,48 +50,10 @@ namespace MyChat.Controllers
         }
 
         #region API CALLS
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<GetContactVM>>> GetContacts()
-        {
-            // Get the contacts
-            // Put the data to the view model
-            // Include the recent message in the convo
-            var contactList = new List<GetContactVM>();
-            var currentUser = await GetCurrentUser();
-            var contactConvo = await _repo.GetAllAsync();
-
-            var getDistinctUser = contactConvo.Where(u =>
-                                                    (u.SenderId == currentUser.Id && u.RecipientId != currentUser.Id) ||
-                                                    (u.SenderId != currentUser.Id && u.RecipientId == currentUser.Id))
-                                                    .OrderBy(o => o.MessageSentDate)
-                                                    .GroupBy(u => u.SenderId)
-                                                    .ToList();
-
-            Console.WriteLine($"DistictUserLenght: {getDistinctUser.Count()}");
-
-            foreach (var convo in getDistinctUser)
-            {
-
-                var uniqueUser = convo.LastOrDefault();
-                var recentConvo = new GetContactVM
-                {
-                    SenderId = uniqueUser.SenderId,
-                    SenderUsername = uniqueUser.SenderUsername,
-                    RecipientId = uniqueUser.RecipientId,
-                    RecipientUsername = uniqueUser.RecipientUsername,
-                    RecentMessage = uniqueUser.Content
-                };
-
-                contactList.Add(recentConvo);
-            }
-
-            return Ok(contactList);
-
-        }
 
         [HttpGet]
         [Route("messaging/load-messages/{id}")]
-        public async Task<ActionResult<List<LoadMessageViewModel>>> LoadMessage(string id)
+        public async Task<ActionResult<List<MessageViewModel>>> LoadMessage(string id)
         {
             var otherUser = _userManager.Users
                                     .Where(i => i.Id == id)
@@ -118,11 +80,11 @@ namespace MyChat.Controllers
                                                           x.RecipientUsername == currentUser.UserName))
                                                         .OrderBy(x => x.MessageSentDate).ToList();
             
-            var messageThread = new List<LoadMessageViewModel>();                                    
+            var messageThread = new List<MessageViewModel>();                                    
             
             foreach(var message in messagesOrderByDate)
             {
-                var messageList = new LoadMessageViewModel
+                var messageList = new MessageViewModel
                 {
                     SenderId = message.SenderId,
                     SenderUsername = message.SenderUsername,
@@ -141,7 +103,6 @@ namespace MyChat.Controllers
         [Route("messaging/get-groupname/{id}")]
         public async Task<ActionResult<GroupNameVM>> GetGroupName(string id)
         {
-            Console.WriteLine($"RecipientId: {id}");
             if(string.IsNullOrEmpty(id)){
                 throw new Exception("RecipientId is null");
             }
@@ -162,21 +123,22 @@ namespace MyChat.Controllers
         }
 
         [HttpGet, ActionName("initial-message-payload")]
-        public async Task<object> InitialMessagingPayload(string id)
+        public async Task<ActionResult> InitialMessagingPayload(string id)
         {
             var otherUser = _userManager.Users
                                     .Where(i => i.Id == id)
                                     .FirstOrDefault();
 
             var currentUser = await GetCurrentUser();
-            
-            return new 
+            var initialPayload = new InitialMessagePayload
             {
                 SenderId = currentUser.Id,
                 SenderUsername = currentUser.UserName,
                 RecipientId = otherUser.Id,
                 RecipientUsername = otherUser.UserName
             };
+            
+            return Ok(initialPayload);
         }
 
 

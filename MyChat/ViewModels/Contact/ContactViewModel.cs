@@ -11,9 +11,7 @@ namespace MyChat.ViewModels.Contact
         public string Id { get; set; }
         [Required]
         public string CurrentUserId { get; set; }
-        [Required]
         public string CurrentUsername { get; set; }
-        [Required]
         public string ContactId { get; set; }
         [Required]
         public string ContactUsername { get; set; }

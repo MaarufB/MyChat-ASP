@@ -26,7 +26,7 @@ namespace MyChat.Controllers
 
         [HttpPost]
         [Route("contact/add-contact")]
-        public async Task<ActionResult> AddContact([FromBody] ContactViewModel contactPayload)
+        public async Task<IActionResult> AddContact([FromBody] ContactViewModel contactPayload)
         {
 
             if (!ModelState.IsValid)
@@ -119,7 +119,7 @@ namespace MyChat.Controllers
 
             var existingContactIds = new Dictionary<string, string>();
 
-            var contactListResponse = new List<LoadContactVM>();
+            var contactListResponse = new List<ContactViewModel>();
 
             foreach (var item in currentUserContacts)
             {
@@ -134,7 +134,7 @@ namespace MyChat.Controllers
                 var isExisting = existingContactIds.ContainsKey(item.Id);
                 if(!isExisting) continue;
 
-                var contact = new LoadContactVM
+                var contact = new ContactViewModel
                 {
                     Id = isExisting ? existingContactIds[item.Id] : null,
                     CurrentUserId = currentUser.Id,
@@ -153,7 +153,7 @@ namespace MyChat.Controllers
 
 
         [HttpGet, ActionName("get-users")]
-        public async Task<ActionResult<IEnumerable<LoadContactVM>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<ContactViewModel>>> GetUsers()
         {
             var currentUser = await GetCurrentUser();
             var allUser = await _userManager.Users.ToListAsync();
@@ -164,7 +164,7 @@ namespace MyChat.Controllers
 
             var existingContactIds = new Dictionary<string, string>();
 
-            var contactListResponse = new List<LoadContactVM>();
+            var contactListResponse = new List<ContactViewModel>();
 
             foreach (var item in currentUserContacts)
             {
@@ -178,7 +178,7 @@ namespace MyChat.Controllers
 
                 var isExisting = existingContactIds.ContainsKey(item.Id);
 
-                var contact = new LoadContactVM
+                var contact = new ContactViewModel
                 {
                     Id = isExisting ? existingContactIds[item.Id] : null,
                     CurrentUserId = currentUser.Id,

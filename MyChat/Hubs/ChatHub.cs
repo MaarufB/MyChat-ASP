@@ -22,31 +22,7 @@ namespace MyChat.Hubs
     public class ChatHub : Hub
 
     {
-        //public async Task SendMessage(string user, string message)
-        //{
-        //    //await Clients.All.SendAsync("ReceiveMessage", user, message);
-        //    await Clients.All.ReceiveMessage(user, message);
-        //}
-
-        // public async Task SendMessageToUser(string connectionId, string message)
-        // {
-        //     await Clients.Client(connectionId).SendAsync("ReceiveMessage", message);
-        // }
-
-        // public override async Task OnConnectedAsync()
-        // {
-        //     await Clients.All.SendAsync("UserConnected", Context.ConnectionId);
-        //     await base.OnConnectedAsync();
-        // }
-
-        // public override async Task OnDisconnectedAsync(Exception exception)
-        // {
-        //     await Clients.All.SendAsync("UserDisconnected", Context.ConnectionId);
-        //     await base.OnDisconnectedAsync(exception);
-        // }
-
         private readonly UserManager<AppIdentityUser> _userManager;
-        // private readonly IBaseRepository<DummyMessage> _repo;
         private readonly IBaseRepository<Message> _repo;
 
         public ChatHub(
@@ -84,7 +60,7 @@ namespace MyChat.Hubs
         }
 
 
-        private async Task<int> SaveMessageAsync(CreateMessagePayload payload)
+        private async Task<int> SaveMessageAsync(MessageViewModel payload)
         {
             var otherUser = await _userManager.Users.Where(i => i.Id == payload.RecipientId).FirstOrDefaultAsync();
 
@@ -116,13 +92,10 @@ namespace MyChat.Hubs
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
-            var groupNameInfo = $"Group Information: {groupName}";
-            Console.WriteLine(groupNameInfo);
-
             return groupName;
         }
 
-        public async Task<bool> SendMessageToGroup(string groupName, CreateMessagePayload message)
+        public async Task<bool> SendMessageToGroup(string groupName, MessageViewModel message)
         {
             var isSavedSuccess = await SaveMessageAsync(message);
 
@@ -130,13 +103,6 @@ namespace MyChat.Hubs
             {
                 throw new HubException("Message Not saved");
             }
-
-            var messageLogInfo = $"Message log info"+
-                                $"sender: {message.SenderUsername}\n" +
-                                $"recipient: {message.RecipientUsername}\n" +
-                                $"content: {message.MessageContent}";
-
-            Console.WriteLine(messageLogInfo);
 
             await Clients.Group(groupName).SendAsync("ReceiveMessage", message);
             
