@@ -46,9 +46,11 @@ namespace MyChat.Hubs
         // }
 
         private readonly UserManager<AppIdentityUser> _userManager;
-        private readonly IBaseRepository<DummyMessage> _repo;
+        // private readonly IBaseRepository<DummyMessage> _repo;
+        private readonly IBaseRepository<Message> _repo;
+
         public ChatHub(
-                        IBaseRepository<DummyMessage> repo, 
+                        IBaseRepository<Message> repo, 
                         UserManager<AppIdentityUser> userManager
                         )
         {
@@ -89,7 +91,7 @@ namespace MyChat.Hubs
 
             var sender = await _userManager.Users.Where(i => i.Id == payload.SenderId).FirstOrDefaultAsync();
 
-            var createMessage = new DummyMessage
+            var createMessage = new Message
             {
                 SenderId = payload.SenderId,
                 SenderUsername = payload.SenderUsername,

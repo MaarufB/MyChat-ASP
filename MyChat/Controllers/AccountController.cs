@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using MyChat.Interfaces;
 using MyChat.Models;
 using MyChat.ViewModels.Account;
@@ -15,12 +9,10 @@ namespace MyChat.Controllers
 {
     public class AccountController : BaseController
     {
-        private readonly ILogger<AccountController> _logger;
         private readonly UserManager<AppIdentityUser> _userManager;
         private readonly SignInManager<AppIdentityUser> _signInManager;
         private readonly IBaseRepository<Message> _messageRepository;
-        // private readonly IUserRepository _userRepository;
-
+    
         public AccountController(UserManager<AppIdentityUser> userManager,
                                  IBaseRepository<Message> messageRepository,
                                  SignInManager<AppIdentityUser> signInManager)
@@ -41,6 +33,8 @@ namespace MyChat.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
         {
+            if(!ModelState.IsValid) return View(loginViewModel);
+
             var user = await _userManager.FindByEmailAsync(loginViewModel.EmailAddress);
          
             if(user == null)

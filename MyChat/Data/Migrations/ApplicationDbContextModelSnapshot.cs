@@ -235,11 +235,8 @@ namespace MyChat.Data.Migrations
 
             modelBuilder.Entity("MyChat.Models.Contact", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("ContactAddedDate")
                         .HasColumnType("datetime2");
@@ -265,13 +262,10 @@ namespace MyChat.Data.Migrations
                     b.ToTable("Contacts");
                 });
 
-            modelBuilder.Entity("MyChat.Models.DummyMessage", b =>
+            modelBuilder.Entity("MyChat.Models.Message", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
@@ -297,7 +291,7 @@ namespace MyChat.Data.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("DummyMessages");
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -366,7 +360,7 @@ namespace MyChat.Data.Migrations
                     b.Navigation("ContactPerson");
                 });
 
-            modelBuilder.Entity("MyChat.Models.DummyMessage", b =>
+            modelBuilder.Entity("MyChat.Models.Message", b =>
                 {
                     b.HasOne("MyChat.Models.AppIdentityUser", "Recipient")
                         .WithMany()

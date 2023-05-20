@@ -1,18 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using MyChat.Interfaces;
 using MyChat.Models;
 using MyChat.ViewModels.Contact;
-using MyChat.ViewModels.ContactViewModel;
 
 namespace MyChat.Controllers
 {
@@ -21,7 +14,7 @@ namespace MyChat.Controllers
     {
         private readonly UserManager<AppIdentityUser> _userManager;
         private readonly IBaseRepository<Contact> _contactRepository;
-        
+
         public ContactController(UserManager<AppIdentityUser> userManager,
                                  IBaseRepository<Contact> contactRepository)
         {
@@ -29,94 +22,176 @@ namespace MyChat.Controllers
             _contactRepository = contactRepository;
         }
 
-        public async Task<IActionResult> Index()
-        {
-            var currentUser = await GetCurrentUser();
-            var getAllUsers = await _userManager.Users.Where(x => x.Id != currentUser.Id).ToListAsync();
-            
-            var listOfUser = new List<ContactViewModel>();
+        #region API
 
-            foreach(var item in getAllUsers)
+        [HttpPost]
+        [Route("contact/add-contact")]
+        public async Task<ActionResult> AddContact([FromBody] ContactViewModel contactPayload)
+        {
+
+            if (!ModelState.IsValid)
             {
-                listOfUser.Add(new ContactViewModel
-                {
-                    UserId = item.Id,
-                    Username = item.UserName
-                });
+                return BadRequest(contactPayload);
             }
 
-            return View(listOfUser);
-        }
-
-        [HttpPost]
-        public IActionResult Search(string userName)
-        {
-            
-            return View(new {ContactName = ""});
-        }
-        
-        [HttpPost]
-        [Route("messaging/add-contact")]
-        public async Task<IActionResult> AddContact(AddContactViewModel contactPayload)
-        {       
-            // var currentUser = await GetCurrentUser();
-
-            // var contact = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == contactPayload.ContactId);
-
-            // var contactAdded = new Contact
-            // {
-            //     ContactOwnerId = currentUser.Id,
-            //     ContactOwnerUsername = currentUser.UserName,
-            //     ContactOwner = currentUser,
-            //     ContactPersonId = contact.Id,
-            //     ContactPersonUsername = contact.UserName,
-            //     ContactPerson = contact
-            // };
-
-            // var isSuccess = await _contactRepository.CreateAsync(contactAdded);
-            
-            // if(isSuccess < 1) return BadRequest();
-
-            // var addContactResponse = new AddContactResponseViewModel
-            // {
-            //     AddedContactId = contactAdded.ContactPersonId,
-            //     IsSuccess = true
-            // };
-
-            // Test API
-            var addContactTest = new AddContactResponseViewModel
+            if (contactPayload.Id != null)
             {
-                AddedContactId = contactPayload.ContactId,
-                IsSuccess = true
+                return BadRequest("Contact is already Exist!");
+            }
+
+            var currentUser = await GetCurrentUser();
+
+            if (currentUser.Id == contactPayload.CurrentUserId && currentUser.Id == contactPayload.ContactId)
+            {
+                return BadRequest("You cannot add yourself as your contact!");
+            }
+
+            var contacts = await _contactRepository.GetAllAsync();
+            var isContactExist = contacts.Any(x => x.ContactOwnerId == contactPayload.CurrentUserId && x.ContactPersonId == contactPayload.ContactId);
+
+            if (isContactExist)
+            {
+                contactPayload.OnContactList = true;
+
+                return Ok(contactPayload);
+            }
+
+            var newContact = new Contact
+            {
+                ContactOwnerId = contactPayload.CurrentUserId,
+                ContactOwnerUsername = contactPayload.CurrentUsername,
+                ContactPersonId = contactPayload.ContactId,
+                ContactPersonUsername = contactPayload.ContactUsername
             };
 
-            return Ok(addContactTest);
-        }
+            var createdContact = await _contactRepository.CreateAsync(newContact);
 
-    #region API
-        [HttpGet, ActionName("load-contacts")]
-        public async Task<ActionResult<IEnumerable<ContactCustomVM>>> LoadContacts()
-        {
-            var currentUser = await GetCurrentUser();
-
-            var contacts = await _userManager.Users
-                                                    .Where(u => u.Id != currentUser.Id)
-                                                    .OrderBy(u => u.UserName)
-                                                    .ToListAsync();
-
-            var customContactList = new List<ContactCustomVM>();
-            
-            foreach(var contact in contacts)
+            if (createdContact > 0)
             {
-                customContactList.Add(
-                    new ContactCustomVM {
-                        ContactId = contact.Id,
-                        Username = contact.UserName
-                    }
-                );
+                contactPayload.Id = newContact.Id;
+                contactPayload.OnContactList = true;
             }
 
-            return Ok(customContactList);
+            return Ok(contactPayload);
+        }
+
+        [HttpPost]
+        [Route("contact/remove-contact")]
+        public async Task<IActionResult> RemoveContact(ContactViewModel contactPayload)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            if (contactPayload.Id == null)
+            {
+                return BadRequest("Contact Id is Null");
+            }
+
+            await _contactRepository.Delete(contactPayload.Id);
+
+            return Ok();
+
+        }
+
+        [HttpGet]
+        [Route("contact/get-contact/{id}")]
+        public async Task<IActionResult> GetContact(string id)
+        {
+            var contact = await _contactRepository.GetOneAsync(id);
+
+            return Ok(contact);
+        }
+
+        [HttpGet, ActionName("get-contacts")]
+        public async Task<IActionResult> GetContacts()
+        {
+            var currentUser = await GetCurrentUser();
+            var allUser = await _userManager.Users.ToListAsync();
+            allUser = allUser.Where(x => x.Id != currentUser.Id).ToList();
+
+
+            var currentUserContacts = await _contactRepository.GetAllAsync();
+            currentUserContacts = currentUserContacts.Where(x => x.ContactOwnerId == currentUser.Id && x.ContactPersonId != currentUser.Id)
+                                                     .OrderBy(x => x.ContactAddedDate)
+                                                     .ToList();
+
+            var existingContactIds = new Dictionary<string, string>();
+
+            var contactListResponse = new List<LoadContactVM>();
+
+            foreach (var item in currentUserContacts)
+            {
+                // existingContactIds[item.ContactPersonId] = item.Id;
+                existingContactIds.Add(item.ContactPersonId, item.Id);
+            }
+
+            foreach (var item in allUser)
+            {
+                if (item.Id == currentUser.Id) continue;
+
+                var isExisting = existingContactIds.ContainsKey(item.Id);
+                if(!isExisting) continue;
+
+                var contact = new LoadContactVM
+                {
+                    Id = isExisting ? existingContactIds[item.Id] : null,
+                    CurrentUserId = currentUser.Id,
+                    CurrentUsername = currentUser.UserName,
+                    ContactId = item.Id,
+                    ContactUsername = item.UserName,
+                    OnContactList = isExisting ? true : false
+                };
+
+                contactListResponse.Add(contact);
+            }
+
+            return Ok(contactListResponse);
+        }
+
+
+
+        [HttpGet, ActionName("get-users")]
+        public async Task<ActionResult<IEnumerable<LoadContactVM>>> GetUsers()
+        {
+            var currentUser = await GetCurrentUser();
+            var allUser = await _userManager.Users.ToListAsync();
+            allUser = allUser.Where(x => x.Id != currentUser.Id).ToList();
+
+            var currentUserContacts = await _contactRepository.GetAllAsync();
+            currentUserContacts = currentUserContacts.Where(x => x.ContactOwnerId == currentUser.Id && x.ContactPersonId != currentUser.Id).ToList();
+
+            var existingContactIds = new Dictionary<string, string>();
+
+            var contactListResponse = new List<LoadContactVM>();
+
+            foreach (var item in currentUserContacts)
+            {
+                // existingContactIds[item.ContactPersonId] = item.Id;
+                existingContactIds.Add(item.ContactPersonId, item.Id);
+            }
+
+            foreach (var item in allUser)
+            {
+                if (item.Id == currentUser.Id) continue;
+
+                var isExisting = existingContactIds.ContainsKey(item.Id);
+
+                var contact = new LoadContactVM
+                {
+                    Id = isExisting ? existingContactIds[item.Id] : null,
+                    CurrentUserId = currentUser.Id,
+                    CurrentUsername = currentUser.UserName,
+                    ContactId = item.Id,
+                    ContactUsername = item.UserName,
+                    OnContactList = isExisting ? true : false
+                };
+
+                contactListResponse.Add(contact);
+            }
+
+            return Ok(contactListResponse);
         }
 
         #endregion
@@ -131,7 +206,5 @@ namespace MyChat.Controllers
 
             return currentUser;
         }
-
-
     }
 }

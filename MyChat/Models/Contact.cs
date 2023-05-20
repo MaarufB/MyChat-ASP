@@ -7,7 +7,7 @@ namespace MyChat.Models
 {
     public class Contact
     {
-        public int Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string ContactOwnerId { get; set; }
         public string ContactOwnerUsername { get; set; }
         public AppIdentityUser ContactOwner { get; set; }

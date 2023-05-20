@@ -1,544 +1,70 @@
-<div class="row mt-0 justify-content-center" id="messaging-main-container">
-    <div class="col mt-0">
-        <div class="row justify-content-center" style="">
-            <div class="col-md-3 col-sm-3 col-lg-3 px-1 border" id="left-container">
-                <header class="left-container-header mt-3 mb-4">
-                    <input id="search-convo" class="mt-0 col" type="text" placeholder="Search Contact...">
-                    @* <button id="modal-button" type="button" class="btn btn-primary" data-bs-toggle="modal"
-                        data-bs-target="#staticBackdrop">Add Contact</button> *@
-                </header>
-                <div class="message-list-container" id="contact-list-container"></div>
-            </div>
-            <div class="col-md-9 col-lg-9 col-sm-9 p-0 border shadow rounded">
-                <header class="m-0 p-2 shadow" id="message-header">
-                    <div class="row m-0">
-                        <div class="col-1">
-                            <div class="contact-avatar">
-                                <img src="/images/avatar.png" alt="Avatar">
-                            </div>
-                        </div>
-                        <div class="col-10 align-self-center">
-                            <h5 class="" id="recepient-name">
-                            </h5>
-                        </div>
-                    </div>
-                </header>
-                <div class="message-convo" style="height: 65vh" id="message-thread-container">
-                </div>
-                <div class="message-controller-container mb-4 border shadow rounded">
-                    <input type="text" name="" id="message-input" placeholder="Type Message...">
-                    <button class="btn btn-danger" id="send-message">
-                        Send
-                    </button>
-                </div>
-            </div>
-        </div>
+<div class="messaging-page-container">
+    <div id="left-container">
+        <header class="left-container-header border">
+            <input 
+                id="search-contact-convo" 
+                type="text"
+                autocomplete="off" 
+                placeholder="Search Contact...">
+            <i class="fa-thin fa-address-book"></i>
+        </header>
+        <div id="contact-list-container"></div>
     </div>
-
-    <!-- Modal -->
-    <div class="modal modal-dialog-scrollable" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Add Contacts</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="border hide-element" id="right-container">
+        <div class="messaging-container">
+            <header class="m-0 p-2 border shadow" id="message-header">
+                <div class="contact-avatar message-header-avatar">
+                    <img src="/images/avatar-2.jpg" alt="Avatar">
                 </div>
-                <div class="modal-body border" id="contact-modal-body" style="height: 60vh;">
-                    <input id="search-convo" class="mt-0 col" type="text" placeholder="Search Contact...">
+                <div class="recipient-container">
+                    <h5 class="" id="recepient-name"></h5>
                 </div>
-                @* <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Understood</button>
-                </div> *@
-            @* <button class="btn btn-primary" type="button">Next</button> *@
+                <button 
+                    type="button" 
+                    class="btn mb-1 hover-overlay bg" 
+                    aria-label="Close" 
+                    id="close-message" 
+                    style="font-size: 20px; font-weight: bold;">X</button>
+          
+            </header>
+            <div class="messages-convo-section" id="message-thread-container">
             </div>
-
+            <div class="message-controller-container border shadow rounded p-3">
+                <textarea class="border rounded" id="message-input" placeholder="Type Message..."></textarea>
+                <button class="btn btn-primary border rounded" id="send-message">
+                    Send
+                </button>
+            </div>
         </div>
+
     </div>
 </div>
 
-
-<script src="~/js/signalr/dist/browser/signalr.js"></script>
-<script>
-    class ContactModalTemplate{
-        
-        constructor(){
-            this.apiService = new ApiService();
-            this.contactModalBody = document.getElementById("contact-modal-body");
-        }
-
-        async runContactModal(){
-            const contacts = await this.apiService.getContacts();
-            
-            console.log("Run Modal is Running!");
-            // need to loop throught the contacts
-            if(contacts){
-                console.log(`contacts is running!`);
-                for(const contact of contacts){
-                    const contactContainerClassList = ["m-3", "p-2", "border", "d-flex", "justify-content-between", "align-items-center", "flex-wrap"]
-                    const creatededContactContainer = this.createElement("div", contactContainerClassList);
-
-                    // Username
-                    const contactUsernameClassList = ["contact-username"];
-                    const createdContactUsernameElement = this.createElement("h6", contactUsernameClassList);
-                    createdContactUsernameElement.textContent = contact.username;
-
-                    // button
-                    const contactButtonClassList = ["btn", "btn-primary"];
-                    const createdAddContactButton = this.createElement("button", contactButtonClassList);
-                    createdAddContactButton.textContent = "Add To Contact";
-
-                    createdAddContactButton.addEventListener('click', async () => {
-                        console.log("Add To contact Clicked");
-                        const addContactPayload = {contactId: contact.contactId};
-                        const addContactResponse = await this.apiService.addContact(addContactPayload);
-                        
-                        if(addContactResponse.isSuccess){
-                            createdAddContactButton.textContent = "Added";
-                        }
-
-
-                    })
-
-                    creatededContactContainer.appendChild(createdContactUsernameElement);
-                    creatededContactContainer.appendChild(createdAddContactButton);
-                    this.contactModalBody.appendChild(creatededContactContainer);
-                }
-
-            }
-
-        }
-
-        createElement(htmlTag, classList){
-            let newHtmlTag = document.createElement(htmlTag);
-            if(classList){
-                for(const item of classList){
-                    newHtmlTag.classList.add(item);
-                }
-            }
-            return newHtmlTag;
-        }
-
-        displayAllUsers(){
-
-        }
-
-    }
-</script>
-
-
-
-<!-- Messaging Hub Script -->
-
-<script>
-    class GroupNameModel {
-        constructor() {
-            this.groupName = null;
-        }
-
-        updateGroupNameModel(groupName) {
-            if (groupName) {
-                this.groupName = groupName;
-            }
-
-            return this.groupName;
-        }
-
-        getGroupName() {
-            return this.groupName;
-        }
-    }
-
-    class MessagePayloadModel {
-        constructor() {
-            this.messagePayload = {
-                SenderId: null,
-                SenderUsername: null,
-                RecipientId: null,
-                RecipientUsername: null,
-                MessageContent: null
-            }
-        }
-
-        updatePayload(initialPayload) {
-            this.messagePayload.SenderId = initialPayload.senderId;
-            this.messagePayload.SenderUsername = initialPayload.senderUsername;
-            this.messagePayload.RecipientId = initialPayload.recipientId;
-            this.messagePayload.RecipientUsername = initialPayload.recipientUsername;
-        }
-
-        getUpdatedMessagePayload() {
-            return this.messagePayload;
-        }
-
-    }
-
-</script>
-
-<script>
-
-    class MessagingHubService {
-
-        constructor(groupNameModel, messagePayloadModel) {
-            this.connection = new signalR.HubConnectionBuilder()
-                .withUrl("/chatHub")
-                .build();
-
-            this.sendButton = document.getElementById('send-message');
-            this.messageInput = document.getElementById('message-input');
-            this.apiService = new ApiService();
-            this.groupNameModel = groupNameModel;
-            this.messagePayloadModel = messagePayloadModel;
-
-            this.messageParentContainer = document.getElementById('message-thread-container');
-            this.recipientName = document.getElementById('recepient-name');
-        }
-
-        async startSendMessageHandler() {
-            this.sendButton.addEventListener('click', async () => {
-                let payload = this.messagePayloadModel.getUpdatedMessagePayload()
-                const groupName = this.groupNameModel.getGroupName();
-
-                if (this.messageInput.value == null || this.messageInput.value == "" || this.recipientName.textContent == "" || this.recipientName.textContent == null) {
-                    return;
-                }
-
-                payload.MessageContent = this.messageInput.value;
-
-                await this.connection.invoke("SendMessageToGroup", groupName, payload);
-                this.messageInput.value = "";
-
-            })
-            return this.sendButton;
-        }
-
-        async createHubConnection(groupName) {
-
-            await this.stopHubConnection();
-
-            this.connection.start().then(async () => {
-                await this.connection.invoke("JoinGroup", groupName)
-            });
-
-        }
-
-        async getIncomingMessage() {
-            this.connection.on("ReceiveMessage", async (message) => {
-                const createdMessageContainer = document.createElement('div');
-                const createdMessageText = document.createElement('p');
-
-                createdMessageText.classList = "message-content";
-
-                if (this.recipientName.textContent === message.recipientUsername) {
-                    createdMessageContainer.classList.add("message-content-container", "message-text-right");
-                    createdMessageText.textContent = message.messageContent;
-                    createdMessageContainer.appendChild(createdMessageText);
-
-                } else {
-                    createdMessageContainer.classList.add("message-content-container", "message-text-left");
-                    createdMessageText.textContent = message.messageContent;
-                    createdMessageContainer.appendChild(createdMessageText);
-                }
-
-                this.messageParentContainer.appendChild(createdMessageContainer)
-
-                this.messageParentContainer.scrollTop = this.messageParentContainer.scrollHeight;
-
-            });
-        }
-
-        async stopHubConnection() {
-            if (this.connection) {
-                await this.connection.stop();
-            }
-        }
-
-        async addGroup(groupName) {
-            this.stopHubConnection();
-            this.hubConnection().then(async () => {
-                await this.hubConnection().invoke("JoinGroup", groupName);
-            });
-        }
-
-        async hubConnection() {
-            return this.connection;
-        }
-
-        async sendMessageHandler(groupName, payload) {
-            try {
-                await this.hubConnection().invoke("SendMessageToGroup", groupName, payload);
-            } catch (error) {
-                window.alert(error);
-            }
-        }
-    }
-
-</script>
-
-<!-- ContactTemplate Script -->
-<script>
-    class ContactTemplate {
-        constructor() {
-            this.contactParentContainer = document.getElementById('contact-list-container');
-            this._avatarImgPath = "/images/avatar.png";
-            this.recipientName = document.getElementById('recepient-name');
-            this.apiService = new ApiService();
-        }
-
-        createContactElement(username, contactId, contactImg = this._avatarImgPath) {
-            const createdContactContainer = document.createElement('div');
-            createdContactContainer.classList.add("contact-container", "border");
-
-            const avatar = this.createAvatarElement(this._avatarImgPath);
-            createdContactContainer.appendChild(avatar);
-
-            const createdContactInfoContainer = this.createContactInfoElement(username, contactId);
-            createdContactContainer.appendChild(createdContactInfoContainer);
-
-            this.contactParentContainer.appendChild(createdContactContainer);
-            this.changeRecipientNameHandler(createdContactContainer, username);
-
-            return createdContactContainer;
-        }
-
-        createAvatarElement(contactImg) {
-            const createdAvatarContainer = document.createElement('div');
-            const createdAvatarImgElement = document.createElement('img');
-            createdAvatarContainer.classList.add("contact-avatar");
-            createdAvatarImgElement.src = contactImg;
-
-            createdAvatarContainer.appendChild(createdAvatarImgElement);
-
-            return createdAvatarContainer;
-        }
-
-        createContactInfoElement(contactUsername,
-            contactId,
-            recentMessage = "Recent Message Test!") {
-
-            const createdContactInfoContainer = document.createElement('div');
-            const createdContactUsernameElement = document.createElement('h6');
-            const createdContactRecentMessageElement = document.createElement('p');
-
-            createdContactUsernameElement.textContent = contactUsername;
-            createdContactRecentMessageElement.textContent = recentMessage;
-
-            createdContactInfoContainer.appendChild(createdContactUsernameElement);
-            createdContactInfoContainer.appendChild(createdContactRecentMessageElement);
-
-            return createdContactInfoContainer;
-        }
-
-        async changeRecipientNameHandler(contactContainer, username) {
-            contactContainer.addEventListener('click', async () => {
-                this.recipientName.textContent = username;
-            })
-        }
-    }
-</script>
-
-<!-- MessagingTemplate Script -->
-<script>
-    class MessageTemplate {
-        constructor() {
-            this.messageParentContainer = document.getElementById('message-thread-container');
-            this.recipientName = document.getElementById('recepient-name');
-        }
-
-        createMessageTemplate(message) {
-            const createdMessageContainer = document.createElement('div');
-            const createdMessageContentElement = document.createElement('p');
-
-            createdMessageContentElement.textContent = message.messageContent;
-            createdMessageContentElement.classList.add("message-content");
-
-            if (message.recipientUsername === this.recipientName.textContent) {
-                createdMessageContainer.classList.add("message-content-container", "message-text-right");
-            } else {
-                createdMessageContainer.classList.add("message-content-container", "message-text-left")
-            }
-
-            createdMessageContainer.appendChild(createdMessageContentElement);
-            this.messageParentContainer.appendChild(createdMessageContainer);
-
-            this.messageParentContainer.scrollTop = this.messageParentContainer.scrollHeight;
-
-            return this.messageParentContainer;
-        }
-
-        getMessageParentContainer() {
-            return this.messageParentContainer;
-        }
-
-        removeExistingMessages() {
-            if (this.messageParentContainer.children.length == 0) return;
-
-            let childement = this.messageParentContainer.lastElementChild;
-
-            while (childement) {
-                this.messageParentContainer.removeChild(childement)
-                childement = this.messageParentContainer.lastElementChild;
-            }
-            return this.messageParentContainer;
-        }
-    }
-</script>
-
-<!-- ApiService Script -->
-<script>
-    class ApiService {
-        // This is when working for calling the server/api
-        constructor() {
-            this.messagingUrl = "/messaging";
-            this.getMessageUrl = `${this.messagingUrl}/load-messages`;
-            this.getGroupNameUrl = `${this.messagingUrl}/get-groupname`;
-            this.contactUrl = "/contact";
-            this.getContactsUrl = `${this.contactUrl}/load-contacts`;
-            this.initialMessagingPaloadUrl = `${this.messagingUrl}/initial-message-payload`;
-            this.addContactUrl = `${this.messagingUrl}/add-contact`;
-        }
-
-        async testMethod() {
-            window.alert("Test Method!!!");
-        }
-
-        async getGroupName(contactId) {
-            const groupName = await this.fetchApi(`${this.getGroupNameUrl}/${contactId}`);
-
-            if (groupName) {
-                return groupName;
-            } else {
-                window.alert("Cannot get Group Name");
-            }
-
-        }
-
-        async getContacts() {
-            const contacts = await this.fetchApi(`${this.getContactsUrl}`);
-            if (contacts) {
-                return contacts;
-            } else {
-                window.alert("Get Contacts API Failed");
-            }
-        }
-
-        async addContact(payload){
-            const addContactResponse = await this.postApi(`${this.addContactUrl}`, payload);
-            console.log(`Contact Response: \n ${addContactResponse}`);
-            
-            return addContactResponse;
-        }
-
-        async getMessages(contactId) {
-            const messages = await this.fetchApi(`${this.getMessageUrl}/${contactId}`);
-            if (messages) {
-                return messages;
-            } else {
-                window.alert("Get Message Error")
-            }
-        }
-
-        // this payload will be used when
-        async getInitialPayload(contactId) {
-
-            const initialPayload = await this.fetchApi(`${this.initialMessagingPaloadUrl}/${contactId}`);
-
-            return initialPayload;
-        }
-
-        getPayloadModel() {
-            return {
-                SenderId: null,
-                SenderUsername: null,
-                RecipientId: null,
-                RecipientUsername: null,
-                MessageContent: null
-            }
-        }
-
-        async fetchApi(url) {
-            try {
-
-                const response = await fetch(url);
-
-                return await response.json();
-
-            } catch (error) {
-                console.log(error);
-            }
-        }
-
-        async postApi(url, payload){
-           try {
-                const response = await fetch(`${url}`, {
-                                method: 'POST',
-                                body: JSON.stringify(payload)
-                            });
-                return await response.json();
-
-           } catch (error) {
-                window.alert("Post API Error!");
-           }
-        }
-
-    }
-</script>
-
-<script>
-    const mainApp = async () => {
-
-        let groupNameModel = new GroupNameModel();
-        let messagePayloadModel = new MessagePayloadModel();
-
-        const apiService = new ApiService();
-        const contactTemplate = new ContactTemplate();
-        const messageTemplate = new MessageTemplate();
-        const messageHubService = new MessagingHubService(groupNameModel, messagePayloadModel);
-
-        const response = await apiService.getContacts();
-        // create contact template
-        for (const contactItem of response) {
-
-            const createdContactTemplate = contactTemplate.createContactElement(contactItem.username, contactItem.contactId);
-
-            // creating an events to the contact when it is being clicked!!!
-            createdContactTemplate.addEventListener('click', async () => {
-
-                const messages = await apiService.getMessages(contactItem.contactId);
-                // add group connection
-                const { groupName } = await apiService.getGroupName(contactItem.contactId);
-                const initialPayload = await apiService.getInitialPayload(contactItem.contactId);
-
-                messagePayloadModel.updatePayload(initialPayload);
-                groupNameModel.updateGroupNameModel(groupName);
-                // call the messagehub to add groupname
-                await messageHubService.createHubConnection(groupName);
-
-
-                // remove all existing messages
-                messageTemplate.removeExistingMessages();
-
-                for (const message of messages) {
-                    messageTemplate.createMessageTemplate(message)
-                }
-            })
-        }
-
-        await messageHubService.startSendMessageHandler()
-        await messageHubService.getIncomingMessage()
-    }
-
-    mainApp();
-
-</script>
-
-<script>
-    let modalButton = document.getElementById('modal-button');
-    let contactModalBody = document.getElementById('contact-container');
-    const contactModalTemplate = new ContactModalTemplate();
-
-    modalButton.addEventListener('click', () => {
-        contactModalTemplate.runContactModal();
-    })
-</script>
+<!-- Modal -->
+<div class="modal modal-dialog-scrollable" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
+    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content shadow">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">ADD CONTACT</h5>
+                <button id="close-modal" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="search-contact-modal-container">
+                <input 
+                    class="" 
+                    id="search-contact-modal" 
+                    type="text" 
+                    autocomplete="off" 
+                    placeholder="Search contact to add">
+                <button 
+                    type="button" 
+                    class="refresh-modal-button" 
+                    id="refresh-users-list">REFRESH</button>
+            </div>
+            <div class="modal-body border" id="contact-modal-body" style="height: 60vh;">
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>

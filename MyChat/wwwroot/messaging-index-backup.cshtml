@@ -1,42 +1,147 @@
-﻿$(document).ready(function() {
+<div class="messaging-page-container">
+    <div id="left-container">
+        <header class="left-container-header border">
+            <input id="search-contact-convo" type="text" placeholder="Search Contact...">
+            <i class="fa-thin fa-address-book"></i>
+        </header>
+        <div id="contact-list-container"></div>
+    </div>
+    <div class="border hide-element" id="right-container">
+        <div class="messaging-container">
+            <header class="m-0 p-2 shadow border border-danger" id="message-header">
+                <div class="contact-avatar message-header-avatar">
+                    <img src="/images/avatar-2.jpg" alt="Avatar">
+                </div>
+                <div class="recipient-container">
+                    <h5 class="" id="recepient-name"></h5>
+                </div>
+                <button 
+                    type="button" 
+                    class="btn mb-1 hover-overlay bg" 
+                    aria-label="Close" 
+                    id="close-message" 
+                    style="font-size: 20px; font-weight: bold;">X</button>
+          
+            </header>
+            <div class="messages-convo-section" id="message-thread-container">
+            </div>
+            <div class="message-controller-container border shadow rounded p-3">
+                <textarea class="border rounded" id="message-input" placeholder="Type Message..."></textarea>
+                <button class="btn btn-primary border rounded" id="send-message">
+                    Send
+                </button>
+            </div>
+        </div>
 
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal modal-dialog-scrollable" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
+    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Add Contacts</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="search-contact-modal-container">
+                <input id="search-contact-modal" type="text" placeholder="Search contact to add">
+            </div>
+            <div class="modal-body border" id="contact-modal-body" style="height: 60vh;">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+
+<script>
     class ContactModalTemplate {
+
         constructor() {
             this.apiService = new ApiService();
             this.contactModalBody = document.getElementById("contact-modal-body");
-            this.searchContactTextbox = document.getElementById("search-contact-modal");
-            this.loadContactButton = document.getElementById("refresh-users-list");
             this.contactLists = [];
         }
 
         async runContactModal() {
 
             this.removeExistingMessages();
+            await this.apiService.getUsers().then((users) => {
+                if(users){ 
 
-            this.contactLists.length = 0;
+                    users.map((user) => {
 
-            const usersResponse = await this.apiService.getUsers();
+                        this.contactLists.push(user);
+                        
+                        const contactContainerClassList = ["m-3", "p-2", "border", "d-flex", "justify-content-between", "align-items-center", "flex-wrap"]
+                        const creatededContactContainer = this.createElement("div", contactContainerClassList);
 
-            if (usersResponse) this.contactLists = usersResponse;
+                        const contactUsernameClassList = ["contact-username"];
+                        const createdContactUsernameElement = this.createElement("h6", contactUsernameClassList);
+                        createdContactUsernameElement.textContent = user.contactUsername;
 
-            if (this.contactLists.length > 0) {
-                this.displayUsers(this.contactLists);
-            }
+                        const contactButtonClassList = ["btn", "btn-primary"];
+                        const createdAddContactButton = this.createElement("button", contactButtonClassList);
+                        createdAddContactButton.textContent = "Connect";
 
-            this.runSearchHandler();
-        }
+                        if (user.onContactList) {
+                            createdAddContactButton.textContent = "Connected";
+                            createdAddContactButton.classList = "btn";
+                            createdAddContactButton.style.backgroundColor = "#DCE1ED";
+                            
+                            @* createdAddContactButton.stye.color = "black"; *@
+                        }
 
-        runSearchHandler() {
-            this.searchContactTextbox.addEventListener('input', (e) => {
-                if (e.target.value != null || e.target.value != "") {
-                    const filterResult = this.searchUsers(e.target.value);
-                    this.displayUsers(filterResult);
-                    return;
+                        let isRemoveState = false;
+
+                        createdAddContactButton.addEventListener('click', async () => {
+
+                            const addContactPayload = {
+                                Id: null,
+                                CurrentUserId: user.currentUserId,
+                                CurrentUsername: user.currentUsername,
+                                ContactId: user.contactId,
+                                ContactUsername: user.contactUsername,
+                                OnContactList: user.onContactList
+                            };
+                            
+                            if(!user.onContactList) {
+                                this.apiService.addContact(addContactPayload).then(({onContactList}) => {
+                                    if(onContactList){
+                                        createdAddContactButton.textContent = "Connected";
+                                        createdAddContactButton.classList = "btn";
+                                        createdAddContactButton.style.backgroundColor = "#DCE1ED";
+                                    }
+                                });
+                            }
+
+                        });
+
+                        creatededContactContainer.appendChild(createdContactUsernameElement);
+                        creatededContactContainer.appendChild(createdAddContactButton);
+                        this.contactModalBody.appendChild(creatededContactContainer);
+
+                    });
                 }
             });
+
+            const sampleKeyword = `user`;
+            const results = this.searchUsers(sampleKeyword);
+            console.log(results)
+
+            @* const filteredResult = this.contactLists.filter((contact) => {
+                
+                let contactResult = contact.contactUsername.toLowerCase();
+                return contactResult.includes(sampleKeyword.toLocaleLowerCase());
+            })
+
+            console.log(filteredResult) *@
         }
 
-        searchUsers(keyword) {
+        searchUsers(keyword){
             const filteredResults = this.contactLists.filter((users) => {
                 const results = users.contactUsername.toLowerCase();
                 return results.includes(keyword.toLowerCase());
@@ -55,64 +160,8 @@
             return newHtmlTag;
         }
 
-        displayUsers(users) {
-            this.removeExistingMessages();
+        displayAllUsers() {
 
-            users.forEach(user => {
-                this.createUserElements(user)
-            })
-        }
-
-
-        createUserElements(user) {
-            // this.contactLists.push(user);
-
-            const contactContainerClassList = ["modal-contact-container", "m-3", "p-3", "border", "d-flex", "justify-content-between", "align-items-center", "flex-wrap"]
-
-            const creatededContactContainer = this.createElement("div", contactContainerClassList);
-
-            const contactUsernameClassList = ["contact-username"];
-            const createdContactUsernameElement = this.createElement("h6", contactUsernameClassList);
-
-            createdContactUsernameElement.textContent = user.contactUsername;
-
-            const contactButtonClassList = ["btn", "btn-primary"];
-            const createdAddContactButton = this.createElement("button", contactButtonClassList);
-
-            createdAddContactButton.textContent = "CONNECT";
-
-            if (user.onContactList) {
-                createdAddContactButton.textContent = "CONNECTED";
-                createdAddContactButton.classList = "btn";
-                createdAddContactButton.style.backgroundColor = "#DCE1ED";
-            }
-
-            createdAddContactButton.addEventListener('click', async () => {
-
-                const addContactPayload = {
-                    Id: null,
-                    CurrentUserId: user.currentUserId,
-                    CurrentUsername: user.currentUsername,
-                    ContactId: user.contactId,
-                    ContactUsername: user.contactUsername,
-                    OnContactList: user.onContactList
-                };
-
-                if (!user.onContactList) {
-                    this.apiService.addContact(addContactPayload).then(({ onContactList }) => {
-                        if (onContactList) {
-                            createdAddContactButton.textContent = "CONNECTED";
-                            createdAddContactButton.classList = "btn";
-                            createdAddContactButton.style.backgroundColor = "#DCE1ED";
-                        }
-                    });
-                }
-
-            });
-
-            creatededContactContainer.appendChild(createdContactUsernameElement);
-            creatededContactContainer.appendChild(createdAddContactButton);
-            this.contactModalBody.appendChild(creatededContactContainer);
         }
 
         removeExistingMessages() {
@@ -127,8 +176,10 @@
             return this.contactModalBody;
         }
     }
+</script>
 
-
+<!-- Messaging Hub Script -->
+<script>
     class GroupNameModel {
         constructor() {
             this.groupName = null;
@@ -173,6 +224,9 @@
         }
     }
 
+</script>
+
+<script>
     class MessagingHubService {
 
         constructor(groupNameModel, messagePayloadModel) {
@@ -195,21 +249,16 @@
                 let payload = this.messagePayloadModel.getUpdatedMessagePayload()
                 const groupName = this.groupNameModel.getGroupName();
 
-                if (this.messageInput.value == null ||
-                    this.messageInput.value == "" ||
-                    this.recipientName.textContent == "" ||
-                    this.recipientName.textContent == null) {
-
+                if (this.messageInput.value == null || this.messageInput.value == "" || this.recipientName.textContent == "" || this.recipientName.textContent == null) {
                     return;
                 }
 
                 payload.MessageContent = this.messageInput.value;
 
                 await this.connection.invoke("SendMessageToGroup", groupName, payload);
-
                 this.messageInput.value = "";
-            })
 
+            })
             return this.sendButton;
         }
 
@@ -223,7 +272,7 @@
 
         }
 
-        async startIncomingMessageHandler() {
+        async getIncomingMessages() {
             this.connection.on("ReceiveMessage", async (message) => {
                 const createdMessageContainer = document.createElement('div');
                 const createdMessageText = document.createElement('p');
@@ -244,6 +293,7 @@
                 this.messageParentContainer.appendChild(createdMessageContainer)
 
                 this.messageParentContainer.scrollTop = this.messageParentContainer.scrollHeight;
+
             });
         }
 
@@ -273,148 +323,83 @@
         }
     }
 
+</script>
+
+<!-- ContactTemplate Script -->
+<script>
     class ContactTemplate {
-        constructor(messageTemplate, groupNameModel, messagePayloadModel, messageHubService) {
+    @* var avatar1 = "/images/avatar.png";
+        let avatar2 = ""; *@
+
+        constructor() {
             this.contactParentContainer = document.getElementById('contact-list-container');
             this._avatarImgPath = "/images/avatar-2.jpg";
             this.recipientName = document.getElementById('recepient-name');
             this.apiService = new ApiService();
-            this.searchContactConvo = document.getElementById("search-contact-convo");
-            this.contactList = [];
-            this.messageTemplate = messageTemplate;
-            this.groupNameModel = groupNameModel;
-            this.messagePayloadModel = messagePayloadModel;
-            this.messageHubService = messageHubService;
         }
-    
-        async runContactService(){
-            this.removeExistingContacts();
 
-            const contactResponse = await this.apiService.getContacts();
-            this.contactList.length = 0;
-    
-            if(contactResponse.length > 0 ) this.contactList = contactResponse;
-    
-            this.displayContacts(this.contactList);
-
-            // run search handler here
-            this.runSearchConvoContactHandler();
-        }
-    
-        displayContacts(contacts){
-            this.removeExistingContacts();
-            contacts.forEach(({contactUsername, contactId}) => {
-                console.log("Creating an element")
-                const createdElement = this.createContactElement(contactUsername, contactId);
-                this.createShowMessageHandler(createdElement, contactId);
-            })
-        }
-    
-        createShowMessageHandler(contactShowMesssageHandler, contactId){
-            contactShowMesssageHandler.addEventListener('click', () => {
-                
-                this.apiService.getMessages(contactId).then((messages) =>{
-                    if(messages){
-                        this.messageTemplate.removeExistingMessages();
-                        messages.forEach((message) => this.messageTemplate.createMessageTemplate(message));
-                    }
-                });
-    
-                this.apiService.getInitialPayload(contactId).then((initialPayLoadResponse) => {
-                    this.messagePayloadModel.updatePayload(initialPayLoadResponse);
-                })
-    
-                this.apiService.getGroupName(contactId)
-                .then(({ groupName }) => {
-                    this.groupNameModel.updateGroupNameModel(groupName);
-                    this.messageHubService.createHubConnection(groupName);
-                })
-            })
-        }
-    
         createContactElement(username, contactId, contactImg = this._avatarImgPath) {
             const createdContactContainer = document.createElement('div');
             createdContactContainer.classList.add("contact-container", "border");
             createdContactContainer.setAttribute('id', `contact-${contactId}`);
-    
+
             const avatar = this.createAvatarElement(this._avatarImgPath);
             createdContactContainer.appendChild(avatar);
-    
+
             const createdContactInfoContainer = this.createContactInfoElement(username, contactId);
             createdContactContainer.appendChild(createdContactInfoContainer);
-    
+
             this.contactParentContainer.appendChild(createdContactContainer);
             this.changeRecipientNameHandler(createdContactContainer, username);
-    
+
             return createdContactContainer;
         }
-    
+
         createAvatarElement(contactImg) {
             const createdAvatarContainer = document.createElement('div');
             const createdAvatarImgElement = document.createElement('img');
-    
             createdAvatarContainer.classList.add("contact-info-avatar-container");
             createdAvatarImgElement.src = contactImg;
             createdAvatarImgElement.classList.add('avatar-img');
-    
+
             createdAvatarContainer.appendChild(createdAvatarImgElement);
-    
+
             return createdAvatarContainer;
         }
-    
+
         createContactInfoElement(contactUsername,
             contactId,
             recentMessage = "Recent Message Test!") {
-    
+
             const createdContactInfoContainer = document.createElement('div');
-            const createdContactUsernameElement = document.createElement('h5');
-    
+
             createdContactInfoContainer.classList.add("contact-info-container");
-            createdContactUsernameElement.textContent = contactUsername;
-    
-            createdContactInfoContainer.appendChild(createdContactUsernameElement);
-    
+
+            const createdContactUsernameElement = document.createElement('h5');
+    @* const createdContactRecentMessageElement = document.createElement('p');
+                createdContactRecentMessageElement.style.marginLeft = "10px"; *@
+
+    @* createdContactInfoContainer.style.flex = "1 0 auto"; *@
+
+                createdContactUsernameElement.textContent = contactUsername;
+    @* createdContactRecentMessageElement.textContent = recentMessage; *@
+
+                createdContactInfoContainer.appendChild(createdContactUsernameElement);
+    @* createdContactInfoContainer.appendChild(createdContactRecentMessageElement); *@
+
             return createdContactInfoContainer;
         }
-    
+
         async changeRecipientNameHandler(contactContainer, username) {
             contactContainer.addEventListener('click', async () => {
                 this.recipientName.textContent = username;
             })
         }
-    
-        runSearchConvoContactHandler(){
-            this.searchContactConvo.addEventListener('input', (e) => {
-                if(e.target.value != null || e.target.value != ""){
-                    const filteredContact = this.searchContact(e.target.value);
-                    this.displayContacts(filteredContact);
-                    return;
-                }
-            })
-        }
-
-        searchContact(keyword) {
-            const filteredResults = this.contactList.filter((contact) => {
-                const results = contact.contactUsername.toLowerCase();
-                return results.includes(keyword.toLowerCase());
-            })
-
-            return filteredResults;
-        }
-        
-        removeExistingContacts(){
-            if (this.contactParentContainer.children.length == 0) return;
-
-            let childement = this.contactParentContainer.lastElementChild;
-
-            while (childement) {
-                this.contactParentContainer.removeChild(childement)
-                childement = this.contactParentContainer.lastElementChild;
-            }
-            return this.contactParentContainer;
-        }
     }
+</script>
 
+<!-- MessagingTemplate Script -->
+<script>
     class MessageTemplate {
         constructor() {
             this.messageParentContainer = document.getElementById('message-thread-container');
@@ -458,7 +443,10 @@
             return this.messageParentContainer;
         }
     }
+</script>
 
+<!-- ApiService Script -->
+<script>
     class ApiService {
         constructor() {
             this.messagingUrl = "/messaging";
@@ -486,9 +474,7 @@
         async getUsers() {
             const users = await this.fetchApi(this.getUsersUrl);
             if (users) {
-
                 return users
-
             } else {
                 window.alert("No Contact")
             }
@@ -602,7 +588,9 @@
         }
 
     }
+</script>
 
+<script>
     class ScreenDisplayService {
         constructor() {
             this.leftContainer = document.getElementById('left-container');
@@ -610,11 +598,11 @@
             this.closeMessageContainer = document.getElementById('close-message');
         }
 
-        runToggle() {
+        runToggle(){
 
             if (window.innerWidth < 700) {
                 jQuery.fx.off = true;
-
+               
                 $('#left-container').toggle('hide-element');
                 $('#right-container').toggle('hide-element');
             }
@@ -635,18 +623,18 @@
             }
         }
 
-        runScreenSizeHandler() {
+        runScreenSizeHandler(){
             window.onresize = () => {
-                if (window.innerWidth > 700) {
+                if(window.innerWidth > 700){
                     let isLeftHidden = $("#left-container").hasClass("hide-element");
-
-                    if (isLeftHidden) {
+                    
+                    if(isLeftHidden){
                         $("#left-container").removeClass("hide-element");
                     }
 
                     let isRightHidden = $("#right-container").hasClass("hide-element");
 
-                    if (isRightHidden) {
+                    if(isRightHidden){
                         $("#right-container").removeClass("hide-element");
                     }
 
@@ -654,43 +642,75 @@
             }
         }
     }
+</script>
 
+
+<script>
     const mainApp = async () => {
-
         const screenDisplay = new ScreenDisplayService();
+
         const groupNameModel = new GroupNameModel();
         const messagePayloadModel = new MessagePayloadModel();
+
+        const apiService = new ApiService();
+        const contactTemplate = new ContactTemplate();
         const messageTemplate = new MessageTemplate();
         const messageHubService = new MessagingHubService(groupNameModel, messagePayloadModel);
-        const contactTemplate = new ContactTemplate(messageTemplate, 
-                                                    groupNameModel, 
-                                                    messagePayloadModel, 
-                                                    messageHubService);
- 
-        contactTemplate.runContactService();
 
+        apiService.getContacts().then((resp) => {
+            resp.map(({contactUsername, contactId}) => {
+
+                let createdContactTemplate = contactTemplate.createContactElement(contactUsername, contactId)
+
+                messageTemplate.removeExistingMessages();
+
+                createdContactTemplate.addEventListener('click', () => {
+
+                    apiService.getMessages(contactId).then((messages) => {
+
+                        if(messages){
+                            messageTemplate.removeExistingMessages();
+                            messages.map((message) => messageTemplate.createMessageTemplate(message))
+                        }
+
+                    });
+
+                    apiService.getInitialPayload(contactId).then((initialPayLoadResponse) => {
+                        messagePayloadModel.updatePayload(initialPayLoadResponse);
+                    })
+
+                    apiService.getGroupName(contactId).then(({groupName}) => {
+                        groupNameModel.updateGroupNameModel(groupName);
+                        messageHubService.createHubConnection(groupName);
+                    })
+
+                    screenDisplay.hideContactContainer();
+                    
+
+                }); 
+            })
+        })
+        
         screenDisplay.runScreenSizeHandler();
 
         await messageHubService.startSendMessageHandler()
-        await messageHubService.startIncomingMessageHandler()
+        await messageHubService.getIncomingMessages()
 
+        const modalButton = document.getElementById('modal-button');
         const contactModalTemplate = new ContactModalTemplate();
 
-        $("#modal-button").click(async () => {
-            await contactModalTemplate.runContactModal();
+        modalButton.addEventListener('click', () => {
+            contactModalTemplate.runContactModal();
         });
 
-        $("#close-message").click(() => {
+
+        closeMessageContainer = document.getElementById('close-message');
+        closeMessageContainer.addEventListener('click', () => {
             $('#left-container').toggle('hide-element');
             $('#right-container').toggle('hide-element');
-            document.location.reload(true);
-            console.log("Reloading:")
-        });
-
-        $("#close-modal").click(function () {
-            document.location.reload();
         })
     }
 
     mainApp();
-});
+
+</script>

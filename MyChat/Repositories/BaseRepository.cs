@@ -40,7 +40,6 @@ namespace MyChat.Repositories
             {
                 _db.Remove(t);
                 await _db.SaveChangesAsync();
-
             }
         }
 

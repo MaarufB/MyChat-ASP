@@ -1,59 +1,8 @@
-TODO:
-
-- When the contact name is clicked then the message thread between users will be displayed.
-- Implement the messaging functionality
-- Create a custom login page and registration page.
-- The default page must be the login page(if the user is not authenticated!)
-- Make sure that the design is responsive to any device screen.
-
-Bug/s:
-
-There is an issue in signalR connection. If you try to connect and there are already 
-connections initialized. There will be an error.
-
-
-Create a class for Contact Template
-- paren contact-list-container (container/div) is already existing. Just need to append below elements
-- create a contact-container and have child elements
-	- avatar-container(contact-avatar) and have a child container
-		- img
-	- contact-info-container and have children elements
-		- h6 for contact username
-		- p for recent message
-
-
-
-
-Create a class for Messaging Template
+TODO: 
 	
-Create a class for MessageHub
 
 
-TODO:
-- Create an API Service for the following
-    * Get the group name
-    * Create group name
-    * Get Messages between the two users
-    * Get Contacts
-
-Architecture:
-    ContactTemplate
-    MessagingTemplate
-
-    API Services
-    
-
-WORKFLOW:
-    * Load contacts = Its main functionality is to get the contacts(for now, all contacts are being retrieved).
-        - When the messaging page loads, this will retreive the contacts from the server.
-        - If the response is success, then it will create containers for each contact.
-        - The contact div is clickable for each contact.
-            - if it is being clicked then it is going to retreive all existing messages with the contact and current user.
-                - This will call the server to get the group name for the current user and the contact.
-                - It will add a connection group using the response data from group name api.
-                    NOTE: If there is already existing connection, it will be removed first then add new one.
-                - Finally, all the messages between the current user and the contact will be retrieved.
-                - The retreived messages will be displayed.
-
-    * Sending a message = Its functionality is to send message to the target user/contact/recipient.
-        - 
+close-message button when closing the message if in the mobile view:
+button id: close-message
+Condition => if view width is less than 700px
+	this will show

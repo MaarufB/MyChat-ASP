@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MyChat.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class ReconstructDummyTable : Migration
+    public partial class InitialMigrationForNewDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -160,11 +160,36 @@ namespace MyChat.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DummyMessages",
+                name: "Contacts",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ContactOwnerId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ContactOwnerUsername = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ContactPersonId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ContactPersonUsername = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ContactAddedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Contacts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Contacts_AspNetUsers_ContactOwnerId",
+                        column: x => x.ContactOwnerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Contacts_AspNetUsers_ContactPersonId",
+                        column: x => x.ContactPersonId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Messages",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     SenderId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     SenderUsername = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RecipientId = table.Column<string>(type: "nvarchar(450)", nullable: true),
@@ -174,14 +199,14 @@ namespace MyChat.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DummyMessages", x => x.Id);
+                    table.PrimaryKey("PK_Messages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DummyMessages_AspNetUsers_RecipientId",
+                        name: "FK_Messages_AspNetUsers_RecipientId",
                         column: x => x.RecipientId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_DummyMessages_AspNetUsers_SenderId",
+                        name: "FK_Messages_AspNetUsers_SenderId",
                         column: x => x.SenderId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
@@ -227,13 +252,23 @@ namespace MyChat.Data.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DummyMessages_RecipientId",
-                table: "DummyMessages",
+                name: "IX_Contacts_ContactOwnerId",
+                table: "Contacts",
+                column: "ContactOwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Contacts_ContactPersonId",
+                table: "Contacts",
+                column: "ContactPersonId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_RecipientId",
+                table: "Messages",
                 column: "RecipientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DummyMessages_SenderId",
-                table: "DummyMessages",
+                name: "IX_Messages_SenderId",
+                table: "Messages",
                 column: "SenderId");
         }
 
@@ -256,7 +291,10 @@ namespace MyChat.Data.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "DummyMessages");
+                name: "Contacts");
+
+            migrationBuilder.DropTable(
+                name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

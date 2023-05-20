@@ -19,9 +19,25 @@ builder.Services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.R
 
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 
-builder.Services.AddRazorPages();
+// builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
+
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = $"/Account/Login";
+    options.LogoutPath = $"/Account/Logout";
+    options.AccessDeniedPath = $"/Home/Error";
+});
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(100);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 
 var app = builder.Build();
@@ -45,8 +61,9 @@ app.UseRouting();
 app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}/{id?}");
+    pattern: "{controller=Messaging}/{action=Index}/{id?}");
 
+// todo: remove app.MapRazorPages()
 app.MapRazorPages();
 app.MapHub<ChatHub>("/chatHub");
 app.Run();

@@ -12,8 +12,8 @@ using MyChat.Data;
 namespace MyChat.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230409091018_ReconstructDummyTable")]
-    partial class ReconstructDummyTable
+    [Migration("20230509074804_InitialMigrationForNewDatabase")]
+    partial class InitialMigrationForNewDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -236,13 +236,39 @@ namespace MyChat.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("MyChat.Models.DummyMessage", b =>
+            modelBuilder.Entity("MyChat.Models.Contact", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<DateTime>("ContactAddedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ContactOwnerId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ContactOwnerUsername")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContactPersonId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ContactPersonUsername")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContactOwnerId");
+
+                    b.HasIndex("ContactPersonId");
+
+                    b.ToTable("Contacts");
+                });
+
+            modelBuilder.Entity("MyChat.Models.Message", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
@@ -268,7 +294,7 @@ namespace MyChat.Data.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("DummyMessages");
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -322,7 +348,22 @@ namespace MyChat.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MyChat.Models.DummyMessage", b =>
+            modelBuilder.Entity("MyChat.Models.Contact", b =>
+                {
+                    b.HasOne("MyChat.Models.AppIdentityUser", "ContactOwner")
+                        .WithMany()
+                        .HasForeignKey("ContactOwnerId");
+
+                    b.HasOne("MyChat.Models.AppIdentityUser", "ContactPerson")
+                        .WithMany()
+                        .HasForeignKey("ContactPersonId");
+
+                    b.Navigation("ContactOwner");
+
+                    b.Navigation("ContactPerson");
+                });
+
+            modelBuilder.Entity("MyChat.Models.Message", b =>
                 {
                     b.HasOne("MyChat.Models.AppIdentityUser", "Recipient")
                         .WithMany()

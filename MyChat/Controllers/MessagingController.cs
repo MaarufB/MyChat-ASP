@@ -22,14 +22,14 @@ namespace MyChat.Controllers
 
         private readonly UserManager<AppIdentityUser> _userManager;
         // private readonly IBaseRepository<Messaging> _repo;
-        private readonly IBaseRepository<DummyMessage> _repo;
+        private readonly IBaseRepository<Message> _repo;
 
         private readonly IBaseRepository<AppIdentityUser> _userRepo;
 
         public MessagingController(
             UserManager<AppIdentityUser> userManager,
             // IBaseRepository<Messaging> repo,
-            IBaseRepository<DummyMessage> repo,
+            IBaseRepository<Message> repo,
             IBaseRepository<AppIdentityUser> userRepo
         )
         {
