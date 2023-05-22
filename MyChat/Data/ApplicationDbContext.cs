@@ -10,6 +10,5 @@ namespace MyChat.Data
 
         public DbSet<Message> Messages { get; set; }
         public DbSet<Contact> Contacts { get; set; }
-        // public override DbSet<AppIdentityUser> Users { get; set; }
     }
 }

@@ -123,7 +123,6 @@ namespace MyChat.Controllers
 
             foreach (var item in currentUserContacts)
             {
-                // existingContactIds[item.ContactPersonId] = item.Id;
                 existingContactIds.Add(item.ContactPersonId, item.Id);
             }
 
