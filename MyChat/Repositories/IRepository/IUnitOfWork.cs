@@ -9,7 +9,7 @@ namespace MyChat.Repositories.IRepository
     {
         IUserRepository UserRespository { get; }
         IContactRepository ContactRepository { get; }
-        IMessagingRepository MessagingRepository { get; }
+        IMessageRepository MessageRepository { get; }
         Task<bool> Complete();
         bool HasChanges();
     }

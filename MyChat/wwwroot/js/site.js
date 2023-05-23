@@ -461,7 +461,7 @@
 
     class ApiService {
         constructor() {
-            this.messagingUrl = "/messaging";
+            this.messagingUrl = "/message";
             this.getMessageUrl = `${this.messagingUrl}/load-messages`;
             this.getGroupNameUrl = `${this.messagingUrl}/get-groupname`;
             this.contactUrl = "/contact";

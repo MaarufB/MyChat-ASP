@@ -16,7 +16,7 @@ namespace MyChat.Repositories
         
         public IUserRepository UserRespository => new UserRepository(_context, _httpContext);
         public IContactRepository ContactRepository => new ContactRepository(_context);
-        public IMessagingRepository MessagingRepository => new MessagingRepository(_context);
+        public IMessageRepository MessageRepository => new MessageRepository(_context);
     
         public async Task<bool> Complete()
         {

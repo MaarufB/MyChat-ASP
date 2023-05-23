@@ -8,11 +8,11 @@ using MyChat.ViewModels;
 namespace MyChat.Controllers
 {
     [Authorize]
-    public class MessagingController : BaseController
+    public class MessageController : BaseController
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public MessagingController(IUnitOfWork unitOfWork)
+        public MessageController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
@@ -31,7 +31,7 @@ namespace MyChat.Controllers
         #region API CALLS
 
         [HttpGet]
-        [Route("messaging/load-messages/{id}")]
+        [Route("message/load-messages/{id}")]
         public async Task<ActionResult<List<MessageViewModel>>> LoadMessage(string id)
         {
             var recipient = await _unitOfWork.UserRespository.GetUserByIdAsync(id);
@@ -41,7 +41,7 @@ namespace MyChat.Controllers
             }
     
             var sender = await _unitOfWork.UserRespository.GetCurrentUserAsync();
-            var messages = await _unitOfWork.MessagingRepository.GetMessageThread(sender, recipient);
+            var messages = await _unitOfWork.MessageRepository.GetMessageThread(sender, recipient);
 
             var messageThread = new List<MessageViewModel>();                                    
             
@@ -63,7 +63,7 @@ namespace MyChat.Controllers
         }
 
         [HttpGet]
-        [Route("messaging/get-groupname/{id}")]
+        [Route("message/get-groupname/{id}")]
         public async Task<ActionResult<GroupNameVM>> GetGroupName(string id)
         {
             if(string.IsNullOrEmpty(id)){
@@ -82,7 +82,7 @@ namespace MyChat.Controllers
         }
 
         [HttpGet, ActionName("initial-message-payload")]
-        public async Task<ActionResult> InitialMessagingPayload(string id)
+        public async Task<ActionResult> InitialMessagePayload(string id)
         {
  
             var otherUser = await _unitOfWork.UserRespository.GetUserByIdAsync(id);

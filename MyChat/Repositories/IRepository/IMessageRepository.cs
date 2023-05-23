@@ -6,7 +6,7 @@ using MyChat.Models;
 
 namespace MyChat.Repositories.IRepository
 {
-    public interface IMessagingRepository
+    public interface IMessageRepository
     {
         Task<IEnumerable<Message>> GetMessageThread(AppIdentityUser sender, AppIdentityUser recipient);
         void AddMessage(Message message);

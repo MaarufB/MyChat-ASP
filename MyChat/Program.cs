@@ -27,7 +27,7 @@ app.UseRouting();
 app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Messaging}/{action=Index}/{id?}");
+    pattern: "{controller=Message}/{action=Index}/{id?}");
 
 // todo: remove app.MapRazorPages()
 app.MapRazorPages();

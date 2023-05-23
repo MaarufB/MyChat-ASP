@@ -5,10 +5,10 @@ using MyChat.Repositories.IRepository;
 
 namespace MyChat.Repositories
 {
-    public class MessagingRepository : IMessagingRepository
+    public class MessageRepository : IMessageRepository
     {
         private readonly ApplicationDbContext _context;
-        public MessagingRepository(ApplicationDbContext context)
+        public MessageRepository(ApplicationDbContext context)
         {
             _context = context;
         }

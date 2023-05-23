@@ -21,7 +21,7 @@
       <div class="container-fluid">
         @if (SignInManager.IsSignedIn(User))
         {
-          <a class="navbar-brand" asp-controller="Messaging" asp-action="Index">MyChat</a>
+          <a class="navbar-brand" asp-controller="Message" asp-action="Index">MyChat</a>
         }
         else
         {
@@ -36,7 +36,7 @@
           {
             <ul class="navbar-nav flex-grow-1">
               <li class="nav-item">
-                <a class="nav-link text-dark" asp-controller="Messaging" asp-action="Index">Messaging</a>
+                <a class="nav-link text-dark" asp-controller="Message" asp-action="Index">Message</a>
               </li>
               <li class="nav-item">
                 @* <a class="nav-link text-dark" asp-area="" asp-controller="Contact" asp-action="Index">Contacts</a> *@

@@ -67,7 +67,7 @@ namespace MyChat.Hubs
                 Content = payload.MessageContent
             };
 
-            _unitOfWork.MessagingRepository.AddMessage(createMessage);
+            _unitOfWork.MessageRepository.AddMessage(createMessage);
 
 
             var result = await _unitOfWork.Complete();
