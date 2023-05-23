@@ -25,6 +25,8 @@ namespace MyChat.Repositories
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
+            // var entity = _table.AsEnumerable();
+
             return await _table.ToListAsync();
         }
 

@@ -1,10 +1,7 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MyChat.Interfaces;
 using MyChat.Models;
+using MyChat.Repositories.IRepository;
 using MyChat.ViewModels.Contact;
 
 namespace MyChat.Controllers
@@ -12,14 +9,10 @@ namespace MyChat.Controllers
     [Authorize]
     public class ContactController : BaseController
     {
-        private readonly UserManager<AppIdentityUser> _userManager;
-        private readonly IBaseRepository<Contact> _contactRepository;
-
-        public ContactController(UserManager<AppIdentityUser> userManager,
-                                 IBaseRepository<Contact> contactRepository)
+        private readonly IUnitOfWork _unitOfWork;        
+        public ContactController(IUnitOfWork unitOfWork)
         {
-            _userManager = userManager;
-            _contactRepository = contactRepository;
+            _unitOfWork = unitOfWork;
         }
 
         #region API
@@ -39,15 +32,17 @@ namespace MyChat.Controllers
                 return BadRequest("Contact is already Exist!");
             }
 
-            var currentUser = await GetCurrentUser();
+            var currentUser = await _unitOfWork.UserRespository.GetCurrentUserAsync();
 
-            if (currentUser.Id == contactPayload.CurrentUserId && currentUser.Id == contactPayload.ContactId)
+            if (currentUser.Id == contactPayload.CurrentUserId && 
+                currentUser.Id == contactPayload.ContactId)
             {
                 return BadRequest("You cannot add yourself as your contact!");
             }
 
-            var contacts = await _contactRepository.GetAllAsync();
-            var isContactExist = contacts.Any(x => x.ContactOwnerId == contactPayload.CurrentUserId && x.ContactPersonId == contactPayload.ContactId);
+            var contacts = await _unitOfWork.ContactRepository.GetContacts(currentUser.Id);
+            var isContactExist = contacts.Any(x => x.ContactOwnerId == contactPayload.CurrentUserId &&
+                                                   x.ContactPersonId == contactPayload.ContactId);
 
             if (isContactExist)
             {
@@ -64,9 +59,9 @@ namespace MyChat.Controllers
                 ContactPersonUsername = contactPayload.ContactUsername
             };
 
-            var createdContact = await _contactRepository.CreateAsync(newContact);
+            _unitOfWork.ContactRepository.AddContact(newContact);
 
-            if (createdContact > 0)
+            if (await _unitOfWork.Complete())
             {
                 contactPayload.Id = newContact.Id;
                 contactPayload.OnContactList = true;
@@ -89,9 +84,16 @@ namespace MyChat.Controllers
                 return BadRequest("Contact Id is Null");
             }
 
-            await _contactRepository.Delete(contactPayload.Id);
+            var contact = await _unitOfWork.ContactRepository.GetContact(contactPayload.CurrentUserId, contactPayload.ContactId);
 
-            return Ok();
+            _unitOfWork.ContactRepository.RemoveContact(contact);
+            
+            if(await _unitOfWork.Complete())
+            {
+                return Ok(true);
+            }
+
+            return BadRequest();
 
         }
 
@@ -99,7 +101,7 @@ namespace MyChat.Controllers
         [Route("contact/get-contact/{id}")]
         public async Task<IActionResult> GetContact(string id)
         {
-            var contact = await _contactRepository.GetOneAsync(id);
+            var contact = await _unitOfWork.UserRespository.GetUserByIdAsync(id);
 
             return Ok(contact);
         }
@@ -107,15 +109,12 @@ namespace MyChat.Controllers
         [HttpGet, ActionName("get-contacts")]
         public async Task<IActionResult> GetContacts()
         {
-            var currentUser = await GetCurrentUser();
-            var allUser = await _userManager.Users.ToListAsync();
+            var currentUser = await _unitOfWork.UserRespository.GetCurrentUserAsync();
+            var allUser = await _unitOfWork.UserRespository.GetUsersAsync();
+
             allUser = allUser.Where(x => x.Id != currentUser.Id).ToList();
 
-
-            var currentUserContacts = await _contactRepository.GetAllAsync();
-            currentUserContacts = currentUserContacts.Where(x => x.ContactOwnerId == currentUser.Id && x.ContactPersonId != currentUser.Id)
-                                                     .OrderBy(x => x.ContactAddedDate)
-                                                     .ToList();
+            var currentUserContacts = await _unitOfWork.ContactRepository.GetContacts(currentUser.Id);
 
             var existingContactIds = new Dictionary<string, string>();
 
@@ -131,6 +130,7 @@ namespace MyChat.Controllers
                 if (item.Id == currentUser.Id) continue;
 
                 var isExisting = existingContactIds.ContainsKey(item.Id);
+                
                 if(!isExisting) continue;
 
                 var contact = new ContactViewModel
@@ -149,16 +149,15 @@ namespace MyChat.Controllers
             return Ok(contactListResponse);
         }
 
-
-
         [HttpGet, ActionName("get-users")]
         public async Task<ActionResult<IEnumerable<ContactViewModel>>> GetUsers()
         {
-            var currentUser = await GetCurrentUser();
-            var allUser = await _userManager.Users.ToListAsync();
+            var currentUser = await _unitOfWork.UserRespository.GetCurrentUserAsync();
+            var allUser = await _unitOfWork.UserRespository.GetUsersAsync();
+
             allUser = allUser.Where(x => x.Id != currentUser.Id).ToList();
 
-            var currentUserContacts = await _contactRepository.GetAllAsync();
+            var currentUserContacts = await _unitOfWork.ContactRepository.GetContacts(currentUser.Id);
             currentUserContacts = currentUserContacts.Where(x => x.ContactOwnerId == currentUser.Id && x.ContactPersonId != currentUser.Id).ToList();
 
             var existingContactIds = new Dictionary<string, string>();
@@ -167,7 +166,6 @@ namespace MyChat.Controllers
 
             foreach (var item in currentUserContacts)
             {
-                // existingContactIds[item.ContactPersonId] = item.Id;
                 existingContactIds.Add(item.ContactPersonId, item.Id);
             }
 
@@ -194,16 +192,5 @@ namespace MyChat.Controllers
         }
 
         #endregion
-
-        private async Task<AppIdentityUser> GetCurrentUser()
-        {
-            var claims = (ClaimsIdentity)User.Identity;
-            var claimUser = claims.FindFirst(ClaimTypes.NameIdentifier);
-            var currentUser = await _userManager.Users
-                                .Where(u => u.Id == claimUser.Value)
-                                .FirstOrDefaultAsync();
-
-            return currentUser;
-        }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using MyChat.Interfaces;
 using MyChat.Models;
 using MyChat.Repositories;
+using MyChat.Repositories.IRepository;
 using MyChat.ViewModels;
 //using Microsoft.AspNetCore.SignalR.IClientProxy;
 
@@ -20,18 +21,12 @@ namespace MyChat.Hubs
     }
     //public class ChatHub: Hub<IClient>
     public class ChatHub : Hub
-
     {
-        private readonly UserManager<AppIdentityUser> _userManager;
-        private readonly IBaseRepository<Message> _repo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ChatHub(
-                        IBaseRepository<Message> repo, 
-                        UserManager<AppIdentityUser> userManager
-                        )
+        public ChatHub(IUnitOfWork unitOfWork)
         {
-            _userManager = userManager;
-            _repo = repo;
+            _unitOfWork = unitOfWork;
         }
 
         // public override async Task OnConnectedAsync()
@@ -60,12 +55,12 @@ namespace MyChat.Hubs
         }
 
 
-        private async Task<int> SaveMessageAsync(MessageViewModel payload)
+        private async Task<bool> SaveMessageAsync(MessageViewModel payload)
         {
-            var otherUser = await _userManager.Users.Where(i => i.Id == payload.RecipientId).FirstOrDefaultAsync();
+            var recipient = await _unitOfWork.UserRespository.GetUserByIdAsync(payload.RecipientId); //_userManager.Users.Where(i => i.Id == payload.RecipientId).FirstOrDefaultAsync();
 
 
-            var sender = await _userManager.Users.Where(i => i.Id == payload.SenderId).FirstOrDefaultAsync();
+            var sender = await _unitOfWork.UserRespository.GetCurrentUserAsync();
 
             var createMessage = new Message
             {
@@ -74,11 +69,16 @@ namespace MyChat.Hubs
                 Sender = sender,
                 RecipientId = payload.RecipientId,
                 RecipientUsername = payload.RecipientUsername,
-                Recipient = otherUser,
+                Recipient = recipient,
                 Content = payload.MessageContent
             };
 
-            var result = await _repo.CreateAsync(createMessage);
+            _unitOfWork.MessagingRepository.AddMessage(createMessage);
+
+
+            var result = await _unitOfWork.Complete();
+
+            
             
             return result;
         }
@@ -99,15 +99,14 @@ namespace MyChat.Hubs
         {
             var isSavedSuccess = await SaveMessageAsync(message);
 
-            if(isSavedSuccess < 1)
+            if(!isSavedSuccess)
             {
                 throw new HubException("Message Not saved");
             }
 
             await Clients.Group(groupName).SendAsync("ReceiveMessage", message);
             
-
-            return isSavedSuccess != 0;
+            return isSavedSuccess;
         }
 
     }

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MyChat.Interfaces;
 using MyChat.Models;
 using MyChat.ViewModels.Account;
 
@@ -11,15 +10,12 @@ namespace MyChat.Controllers
     {
         private readonly UserManager<AppIdentityUser> _userManager;
         private readonly SignInManager<AppIdentityUser> _signInManager;
-        private readonly IBaseRepository<Message> _messageRepository;
     
         public AccountController(UserManager<AppIdentityUser> userManager,
-                                 IBaseRepository<Message> messageRepository,
                                  SignInManager<AppIdentityUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _messageRepository = messageRepository;
         }
 
         [AllowAnonymous]

@@ -1,41 +1,20 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using MyChat.Interfaces;
 using MyChat.Models;
+using MyChat.Repositories.IRepository;
 using MyChat.ViewModels;
-using MyChat.ViewModels.MessagingViewModel;
 
 namespace MyChat.Controllers
 {
     [Authorize]
     public class MessagingController : BaseController
     {
+        private readonly IUnitOfWork _unitOfWork;
 
-        private readonly UserManager<AppIdentityUser> _userManager;
-        // private readonly IBaseRepository<Messaging> _repo;
-        private readonly IBaseRepository<Message> _repo;
-
-        private readonly IBaseRepository<AppIdentityUser> _userRepo;
-
-        public MessagingController(
-            UserManager<AppIdentityUser> userManager,
-            // IBaseRepository<Messaging> repo,
-            IBaseRepository<Message> repo,
-            IBaseRepository<AppIdentityUser> userRepo
-        )
+        public MessagingController(IUnitOfWork unitOfWork)
         {
-            _userManager = userManager;
-            _repo = repo;
-            _userRepo = userRepo;
+            _unitOfWork = unitOfWork;
         }
 
         public ActionResult Index()
@@ -55,34 +34,18 @@ namespace MyChat.Controllers
         [Route("messaging/load-messages/{id}")]
         public async Task<ActionResult<List<MessageViewModel>>> LoadMessage(string id)
         {
-            var otherUser = _userManager.Users
-                                    .Where(i => i.Id == id)
-                                    .FirstOrDefault();
-
-            if(otherUser == null)
+            var recipient = await _unitOfWork.UserRespository.GetUserByIdAsync(id);
+            if(recipient == null)
             {
                 return NotFound();
             }
-
-            var claims = (ClaimsIdentity)User.Identity;
-            var claimsUser = claims.FindFirst(ClaimTypes.NameIdentifier);
     
-            var currentUser = await _userManager.Users
-                                    .Where(i=> i.Id == claimsUser.Value)
-                                    .FirstOrDefaultAsync();
+            var sender = await _unitOfWork.UserRespository.GetCurrentUserAsync();
+            var messages = await _unitOfWork.MessagingRepository.GetMessageThread(sender, recipient);
 
-
-            var messages = await _repo.GetAllAsync();
-      
-            var messagesOrderByDate = messages.Where(x => (x.RecipientUsername == otherUser.UserName && 
-                                                          x.SenderUsername == currentUser.UserName) ||
-                                                          (x.SenderUsername == otherUser.UserName && 
-                                                          x.RecipientUsername == currentUser.UserName))
-                                                        .OrderBy(x => x.MessageSentDate).ToList();
-            
             var messageThread = new List<MessageViewModel>();                                    
             
-            foreach(var message in messagesOrderByDate)
+            foreach(var message in messages)
             {
                 var messageList = new MessageViewModel
                 {
@@ -107,12 +70,8 @@ namespace MyChat.Controllers
                 throw new Exception("RecipientId is null");
             }
 
-            var currentUser = await GetCurrentUser();
-            var otherUser = await _userManager.Users
-                                .Where(i => i.Id == id)
-                                .FirstOrDefaultAsync();
-
-            // var groupName = NormalizeGroupName(currentUser.UserName, otherUser.UserName);
+            var currentUser = await _unitOfWork.UserRespository.GetCurrentUserAsync();
+            var otherUser = await _unitOfWork.UserRespository.GetUserByIdAsync(id);
 
             var groupName = new GroupNameVM
             {
@@ -125,11 +84,11 @@ namespace MyChat.Controllers
         [HttpGet, ActionName("initial-message-payload")]
         public async Task<ActionResult> InitialMessagingPayload(string id)
         {
-            var otherUser = _userManager.Users
-                                    .Where(i => i.Id == id)
-                                    .FirstOrDefault();
+ 
+            var otherUser = await _unitOfWork.UserRespository.GetUserByIdAsync(id);
+            var currentUser = await _unitOfWork.UserRespository.GetCurrentUserAsync();
 
-            var currentUser = await GetCurrentUser();
+
             var initialPayload = new InitialMessagePayload
             {
                 SenderId = currentUser.Id,
@@ -140,7 +99,6 @@ namespace MyChat.Controllers
             
             return Ok(initialPayload);
         }
-
 
         #endregion
         private string GetGroupName(string caller, string other)
@@ -163,16 +121,5 @@ namespace MyChat.Controllers
             return GetGroupName(messageSender, messageRecipient);
         }
 
-        private async Task<AppIdentityUser> GetCurrentUser()
-        {
-            var claims = (ClaimsIdentity)User.Identity;
-            var claimUser = claims.FindFirst(ClaimTypes.NameIdentifier);
-            var currentUser = await _userManager.Users
-                                .Where(u => u.Id == claimUser.Value)
-                                // .Where(u => u.UserName == "user1@gmail.com")
-                                .FirstOrDefaultAsync();
-
-            return currentUser;
-        }
     }
 }

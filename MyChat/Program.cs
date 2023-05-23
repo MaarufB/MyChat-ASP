@@ -4,6 +4,7 @@ using MyChat.Hubs;
 using MyChat.Interfaces;
 using MyChat.Models;
 using MyChat.Repositories;
+using MyChat.Repositories.IRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,12 +18,12 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
-
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
