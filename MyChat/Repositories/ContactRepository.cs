@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MyChat.Data;
 using MyChat.Models;
 using MyChat.Repositories.IRepository;
-using MyChat.ViewModels.Contact;
 
 namespace MyChat.Repositories
 {

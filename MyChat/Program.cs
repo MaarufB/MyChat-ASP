@@ -1,45 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using MyChat.Data;
+using MyChat.Extentions;
 using MyChat.Hubs;
-using MyChat.Interfaces;
-using MyChat.Models;
-using MyChat.Repositories;
-using MyChat.Repositories.IRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-builder.Services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
-
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-// builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews();
-builder.Services.AddSignalR();
-builder.Services.AddHttpContextAccessor();
-
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = $"/Account/Login";
-    options.LogoutPath = $"/Account/Logout";
-    options.AccessDeniedPath = $"/Home/Error";
-});
-
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(100);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
-
+builder.Services.AddIdentityServices(builder.Configuration);
+builder.Services.AddApplicationServices(builder.Configuration);
 
 var app = builder.Build();
 

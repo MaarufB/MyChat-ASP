@@ -1,14 +1,8 @@
-﻿using System.Reflection;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using MyChat.Interfaces;
 using MyChat.Models;
-using MyChat.Repositories;
 using MyChat.Repositories.IRepository;
 using MyChat.ViewModels;
-//using Microsoft.AspNetCore.SignalR.IClientProxy;
 
 namespace MyChat.Hubs
 {
