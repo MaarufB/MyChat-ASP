@@ -1,23 +1,25 @@
 <div class="messaging-page-container">
     <div id="left-container">
         <header class="left-container-header border">
-            <input 
-                id="search-contact-convo" 
-                type="text"
-                autocomplete="off" 
-                placeholder="Search Contact...">
-            <i class="fa-thin fa-address-book"></i>
+            <div class="search-input-container">
+                <img class="search-icon" src="/images/icons/icon-search.png" alt="">
+                <input 
+                    id="search-contact-convo" 
+                    type="text"
+                    autocomplete="off" 
+                    placeholder="Search Contact..." 
+                />
+            </div>
+            <button class="btn-refresh">Refresh</button>
         </header>
         <div id="contact-list-container"></div>
     </div>
     <div class="border hide-element" id="right-container">
         <div class="messaging-container">
             <header class="m-0 p-2 border shadow" id="message-header">
-                <div class="contact-avatar message-header-avatar">
-                    <img src="/images/avatar-2.jpg" alt="Avatar">
-                </div>
+                <!--TODO: In version 2, we will put a profile image of the user-->
                 <div class="recipient-container">
-                    <h5 class="" id="recepient-name"></h5>
+                    <p class="" id="recepient-name"></p>
                 </div>
                 <button 
                     type="button" 
@@ -31,9 +33,13 @@
             </div>
             <div class="message-controller-container border shadow rounded p-3">
                 <textarea class="border rounded" id="message-input" placeholder="Type Message..."></textarea>
-                <button class="btn btn-primary border rounded" id="send-message">
+                @* <button class="btn btn-primary border rounded" id="send-message">
                     Send
-                </button>
+                </button> *@
+                <div class="send-message-container">
+                    <image src="/images/icons/icon-send.png" id="send-message"></image>
+                </div>
+
             </div>
         </div>
 
@@ -46,7 +52,7 @@
     <div class="modal-dialog">
         <div class="modal-content shadow">
             <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">ADD CONTACT</h5>
+                <h5 class="modal-title" id="staticBackdropLabel">Add Contact</h5>
                 <button id="close-modal" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="search-contact-modal-container">

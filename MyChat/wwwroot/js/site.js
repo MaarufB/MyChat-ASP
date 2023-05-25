@@ -285,6 +285,8 @@
             this.groupNameModel = groupNameModel;
             this.messagePayloadModel = messagePayloadModel;
             this.messageHubService = messageHubService;
+            this.iconDelete = "/images/icons/icon-delete.png";
+            this.iconMessage = "/images/icons/icon-message-contact.png";
         }
     
         async runContactService(){
@@ -331,18 +333,50 @@
                 })
             })
         }
-    
+        
+        deleteHandler(contactId, elementId){
+            console.log("This is the event handler to delete contact from the list.");
+        }
+
+        createIconElement(iconPath){
+            const iconElement = document.createElement('img');
+            iconElement.src = iconPath;
+            iconElement.classList.add("icon-default-size");
+
+            return iconElement;
+        }
+
+        createContainerElement(childElement){
+            
+        }
+        
         createContactElement(username, contactId, contactImg = this._avatarImgPath) {
             const createdContactContainer = document.createElement('div');
-            createdContactContainer.classList.add("contact-container", "border");
+            createdContactContainer.classList.add("contact-container");
             createdContactContainer.setAttribute('id', `contact-${contactId}`);
     
-            const avatar = this.createAvatarElement(this._avatarImgPath);
-            createdContactContainer.appendChild(avatar);
-    
-            const createdContactInfoContainer = this.createContactInfoElement(username, contactId);
-            createdContactContainer.appendChild(createdContactInfoContainer);
-    
+            // Change this to message
+            // const avatar = this.createAvatarElement(this._avatarImgPath);
+            // createdContactContainer.appendChild(avatar);
+            // create message icon element
+            const messageIconElement = this.createIconElement(this.iconMessage);
+            messageIconElement.classList.add("icon-default-size");
+            createdContactContainer.appendChild(messageIconElement);
+            // create delete icon
+            const deleteIconElement = this.createIconElement(this.iconDelete);
+            deleteIconElement.classList.add("icon-delete");
+
+
+            // const createdContactInfoContainer = this.createContactInfoElement(username, contactId);
+
+            // createdContactContainer.appendChild(createdContactInfoContainer);
+
+            const contactUsernameElement = document.createElement('p');
+            contactUsernameElement.textContent = username;
+
+            createdContactContainer.appendChild(contactUsernameElement);
+            createdContactContainer.appendChild(deleteIconElement);    
+
             this.contactParentContainer.appendChild(createdContactContainer);
             this.changeRecipientNameHandler(createdContactContainer, username);
     
@@ -367,7 +401,7 @@
             recentMessage = "Recent Message Test!") {
     
             const createdContactInfoContainer = document.createElement('div');
-            const createdContactUsernameElement = document.createElement('h5');
+            const createdContactUsernameElement = document.createElement('p');
     
             createdContactInfoContainer.classList.add("contact-info-container");
             createdContactUsernameElement.textContent = contactUsername;

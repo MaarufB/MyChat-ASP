@@ -52,7 +52,7 @@ namespace MyChat.Controllers
                 return View(loginViewModel);
             }
 
-            return RedirectToAction("Index", "Messaging");
+            return RedirectToAction("Index", "Message");
         }
 
         [AllowAnonymous]
