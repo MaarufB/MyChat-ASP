@@ -356,6 +356,7 @@
             this.messageHubService = messageHubService;
             this.iconDelete = "/images/icons/icon-delete.png";
             this.iconMessage = "/images/icons/icon-message-contact.png";
+            this.screenDisplayService = new ScreenDisplayService()
         }
     
         async runContactService(){
@@ -416,6 +417,8 @@
                     this.groupNameModel.updateGroupNameModel(groupName);
                     this.messageHubService.createHubConnection(groupName);
                 })
+                
+                this.screenDisplayService.screenDisplay();
             })
         }
         
@@ -727,6 +730,7 @@
             this.leftContainer = document.getElementById('left-container');
             this.rightContainer = document.getElementById('right-container');
             this.closeMessageContainer = document.getElementById('close-message');
+            this.testSize = document.getElementById("test-size");
         }
 
         runToggle() {
@@ -739,36 +743,41 @@
             }
         }
 
-        hideContactContainer() {
-            if (window.innerWidth < 700) {
-                jQuery.fx.off = true;
-                $('#left-container').toggle('hide-element');
-                $('#right-container').toggle('hide-element');
-            }
-        }
+        screenDisplay(){
+            if (window.innerWidth < 575) {
 
-        hideMessageContainer() {
-            if (window.innerWidth < 700) {
-                $('#left-container').toggle('hide-element');
-                $('#right-container').toggle('hide-element');
+                let leftIsHidden = this.leftContainer.classList.contains("hide-element") || false;
+                
+                if(!leftIsHidden){
+                    this.leftContainer.classList.add("hide-element");
+                }                
+
+                let rightIsHidden = this.rightContainer.classList.contains("hide-element") || false;
+                if(rightIsHidden){
+                    this.rightContainer.classList.remove("hide-elemenent");
+                }
+
             }
         }
 
         runScreenSizeHandler() {
             window.onresize = () => {
-                if (window.innerWidth > 700) {
-                    let isLeftHidden = $("#left-container").hasClass("hide-element");
-
-                    if (isLeftHidden) {
-                        $("#left-container").removeClass("hide-element");
+                if (window.innerWidth > 575) {
+                    
+                    let isLeftHidden = this.leftContainer.classList.contains("hide-element");
+                    
+                    if(isLeftHidden){
+                        this.leftContainer.classList.remove("hide-element");
                     }
-
-                    let isRightHidden = $("#right-container").hasClass("hide-element");
-
-                    if (isRightHidden) {
-                        $("#right-container").removeClass("hide-element");
+                    
+                    let isRightHidden = this.rightContainer.classList.contains("hide-element");
+                    if(isRightHidden){
+                        this.rightContainer.classList.remove("hide-element");
                     }
+                }
 
+                if(window.innerWidth < 575){
+                    this.rightContainer.classList.add("hide-element");
                 }
             }
         }
