@@ -3,46 +3,29 @@
         <header class="left-container-header border">
             <div class="search-input-container">
                 <img class="search-icon" src="/images/icons/icon-search.png" alt="">
-                <input 
-                    id="search-contact-convo" 
-                    type="text"
-                    autocomplete="off" 
-                    placeholder="Search Contact..." 
-                />
+                <input id="search-contact-convo" type="text" autocomplete="off" placeholder="Search Contact..." />
             </div>
-            <button class="btn-refresh">Refresh</button>
+            <button class="btn-refresh-contact" id="refresh-contact-list">Refresh</button>
         </header>
         <div id="contact-list-container"></div>
     </div>
     <div class="border hide-element" id="right-container">
         <div class="messaging-container">
             <header class="m-0 p-2 border shadow" id="message-header">
-                <!--TODO: In version 2, we will put a profile image of the user-->
                 <div class="recipient-container">
                     <p class="" id="recepient-name"></p>
                 </div>
-                <button 
-                    type="button" 
-                    class="btn mb-1 hover-overlay bg" 
-                    aria-label="Close" 
-                    id="close-message" 
+                <button type="button" class="btn mb-1 hover-overlay bg" aria-label="Close" id="close-message"
                     style="font-size: 20px; font-weight: bold;">X</button>
-          
+
             </header>
             <div class="messages-convo-section" id="message-thread-container">
             </div>
             <div class="message-controller-container border shadow rounded p-3">
                 <textarea class="border rounded" id="message-input" placeholder="Type Message..."></textarea>
-                @* <button class="btn btn-primary border rounded" id="send-message">
-                    Send
-                </button> *@
-                <div class="send-message-container">
-                    <image src="/images/icons/icon-send.png" id="send-message"></image>
-                </div>
-
+                <button class="btn" id="send-message">Send</button>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -53,24 +36,22 @@
         <div class="modal-content shadow">
             <div class="modal-header">
                 <h5 class="modal-title" id="staticBackdropLabel">Add Contact</h5>
-                <button id="close-modal" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button id="close-modal" type="button" class="btn-close" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
             <div class="search-contact-modal-container">
-                <input 
-                    class="" 
-                    id="search-contact-modal" 
-                    type="text" 
-                    autocomplete="off" 
-                    placeholder="Search contact to add">
-                <button 
-                    type="button" 
-                    class="refresh-modal-button" 
-                    id="refresh-users-list">REFRESH</button>
+                <div class="search-input-modal-container">
+                    <img class="icon-default-size" src="/images/icons/icon-search.png" alt="">
+                    <input class="" id="search-contact-modal" type="text" autocomplete="off"
+                        placeholder="Search contact to add">
+                </div>
+                <button type="button" class="refresh-modal-button" id="refresh-modal-list">Refresh</button>
             </div>
             <div class="modal-body border" id="contact-modal-body" style="height: 60vh;">
             </div>
         </div>
     </div>
 </div>
+
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>

@@ -175,9 +175,10 @@ p, h1, h2, h3, h4, h5, h6{
 	background-color: #F2F2F2;
 }
 
-.btn-refresh {
+.btn-refresh-contact {
 	height: 36px;
 	width: 113px;
+	border: 0;
 	color: var(--background-primary);
 	background-color: var(--background-secondary);
 }
@@ -197,8 +198,6 @@ p, h1, h2, h3, h4, h5, h6{
 	font-size: var(--font-size-default);
   }
 
-
-
 .add-contact-icon{
 	flex: 0 0 auto;
 	font-size: 20px;
@@ -207,30 +206,18 @@ p, h1, h2, h3, h4, h5, h6{
 #contact-list-container{
 	padding: 5px;
 	display: flex;
-	gap: 10px;
+	gap: 1px;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-}
-.contact-info-container{
-	display: flex;
-	/* flex-flow: nowrap column; */
-	justify-content: space-between;
-	align-content: center;
-	flex: 1 0 auto;
-}
-
-.inbox-container{
-	display: flex;
-	margin: 5px;
-	padding: 5px;
-	/* border: 2px; */
-	/* border: 2px solid red; */
+	max-height: 80%;
+	overflow-y: auto;
+	scroll-behavior: smooth;
 }
 .contact-container{
 	display: flex;
-	width: 427px;
-	height: 66px;
+	flex: 1 0 66px;
+	width: 90%;
 	justify-content: baseline;
 	align-items: center;
 	padding: 5px 20px 5px 20px;
@@ -245,7 +232,6 @@ p, h1, h2, h3, h4, h5, h6{
 	background-color: #CFCDCD;
 	transition: .5s ease-out;
 }
-
 
 .contact-container:hover{
 	box-shadow: #D9D9D9;
@@ -262,7 +248,6 @@ p, h1, h2, h3, h4, h5, h6{
 .contact-message-details{
 	margin-left: 5px;
 	display: block;
-	/* border: 2px solid black; */
 }
 
 .messaging-container{
@@ -357,12 +342,11 @@ p, h1, h2, h3, h4, h5, h6{
 }
 
 #message-input{
-	flex: 2 1 52px;
+	flex: 1 1 80%;
 	width: 597px;
 	padding: 10px;
 	height: 50px;
 	border: 0;
-	/* background-color: #F2F2F2; */
 	
 }
 
@@ -371,14 +355,14 @@ p, h1, h2, h3, h4, h5, h6{
 }
 
 #send-message{
-	flex: 0 0 auto;
+	flex: 0 1 20%;
 	padding: 0;
 	margin: 0;
 	align-content: end;
-	/* color: white; */
-	width: 75px;
-	height: 52px;
-	/* opacity: 0.7; */
+	color: var(--background-primary);
+	/* width: 20%; */
+	padding: 5px 16px;
+	background-color: var(--background-secondary);
 }
 
 #send-message:hover{
@@ -398,7 +382,7 @@ p, h1, h2, h3, h4, h5, h6{
 
 /* Modals */
 .modal-content{
-	background-color: #F2F2F2;
+
 }
 
 .modal-header{
@@ -406,36 +390,83 @@ p, h1, h2, h3, h4, h5, h6{
 }
 
 .modal-contact-container{
-	background-color: #FFFFFF;
+	background-color: #F2F2F2;
+	margin: 2px;
+	display: flex;
+	justify-content: baseline;
+	align-items: center;
+	gap: 20px;
+	padding: 20px;
 }
+
+.modal-contact-username {
+	font-weight: bold;
+}
+
+.add-contact-button{
+	margin-left: auto;
+}
+
 
 
 .search-contact-modal-container{
 	display: flex;
-	justify-content: center;
+	justify-content: space-between;
+	align-items: center;
 	padding: 10px;
 	gap: 20px;
 }
 
-#search-contact-modal{
-	flex: 1 0 auto;
+.search-input-modal-container{
+	/* border: 2px solid red; */
+	flex: 1 0 60%;
+	display: flex;
+	align-items: center;
 	border-radius: 20px;
-	background-color: #FCFCFC;
+	background-color: #F2F2F2;
+	padding-left: 20px;
+}
+
+
+#search-contact-modal{
+	flex-grow: 1;
 	outline: none;
+	border-radius: 20px;
+	background-color: inherit;
 	border:0;
-	padding: 10px 10px 10px 30px;
+	padding: 10px 10px 10px 10px;
 }
 
 #search-contact-modal::placeholder{
-	font-weight: bold;
-	font-style: italic;
+	/* font-weight: bold; */
 }
 
-.search-contact-modal-container .refresh-modal-button {
-	flex: 1 0 20%;
-	background-color: #D9D9D9;
-	border: 1px;
+.search-contact-modal-container > .refresh-modal-button {
+	flex: 1 0 10%;
+	color: #FFFFFF;
+	border: 0;
+	background-color: var(--background-secondary);
 	outline: none;
+	padding: 5px;
+
+	
+}
+
+.contact-add-success {
+	background-image: url('/images/icons/icon-success.png');
+	background-size: cover; /* Adjust as needed */
+	background-repeat: no-repeat;
+	background-position: center center;
+	border: 0;
+	padding: 2px;
+}
+.contact-add-default{
+	background-image: url('/images/icons/icon-add.png');
+	background-size: cover; /* Adjust as needed */
+	background-repeat: no-repeat;
+	background-position: center center;
+	border:0;
+	padding:2px;
 }
 
 /* Mobile layout! */

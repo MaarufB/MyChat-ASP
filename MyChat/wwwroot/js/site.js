@@ -6,11 +6,27 @@
             this.contactModalBody = document.getElementById("contact-modal-body");
             this.searchContactTextbox = document.getElementById("search-contact-modal");
             this.loadContactButton = document.getElementById("refresh-users-list");
+            this.refrestModalList = document.getElementById("refresh-modal-list");
             this.contactLists = [];
+
+            this.iconContact = "/images/icons/icon-user.png";
+            this.iconStatusDefault = "/images/icons/icon-add.png";
+            this.iconStatusSuccess = "/images/icons/icon-success.png";
         }
 
         async runContactModal() {
 
+            const users = await this.getUsers();
+
+            if (users.length > 0) {
+                this.displayUsers(users);
+            }
+
+            this.runSearchHandler();
+            this.runModalRefreshHandler();
+        }
+
+        async getUsers(){
             this.removeExistingMessages();
 
             this.contactLists.length = 0;
@@ -18,12 +34,22 @@
             const usersResponse = await this.apiService.getUsers();
 
             if (usersResponse) this.contactLists = usersResponse;
+            
+            return this.contactLists;
+        }
+        
+        runModalRefreshHandler(){
 
-            if (this.contactLists.length > 0) {
-                this.displayUsers(this.contactLists);
-            }
+            this.refrestModalList.addEventListener('click', async () => {
+                const users = await this.getUsers();
 
-            this.runSearchHandler();
+                if(users.length > 0) {
+
+                    this.displayUsers(users);
+                }
+
+                this.searchContactTextbox.value = "";
+            })
         }
 
         runSearchHandler() {
@@ -40,13 +66,14 @@
             const filteredResults = this.contactLists.filter((users) => {
                 const results = users.contactUsername.toLowerCase();
                 return results.includes(keyword.toLowerCase());
-            })
+            });
 
             return filteredResults;
         }
 
         createElement(htmlTag, classList) {
             let newHtmlTag = document.createElement(htmlTag);
+
             if (classList) {
                 for (const item of classList) {
                     newHtmlTag.classList.add(item);
@@ -63,28 +90,39 @@
             })
         }
 
+        createIconImage(filePath, classList){
+            const elem = document.createElement("img");
+
+            if(filePath){
+                elem.src = filePath;
+            }
+
+            if(classList){
+                classList.forEach((item) => {
+                    elem.classList.add(item);
+                });
+            }
+
+            return elem;
+        }
 
         createUserElements(user) {
-            // this.contactLists.push(user);
-
-            const contactContainerClassList = ["modal-contact-container", "m-3", "p-3", "border", "d-flex", "justify-content-between", "align-items-center", "flex-wrap"]
-
-            const creatededContactContainer = this.createElement("div", contactContainerClassList);
-
-            const contactUsernameClassList = ["contact-username"];
-            const createdContactUsernameElement = this.createElement("h6", contactUsernameClassList);
-
+            const contactContainerClassList = ["modal-contact-container"]
+            const createdContactContainer = this.createElement("div", contactContainerClassList);
+            
+            const iconUserClass = ["icon-default-size"];
+            const iconUser = this.createIconImage(this.iconContact, iconUserClass);
+            
+            const contactUsernameClassList = ["modal-contact-username"];
+            const createdContactUsernameElement = this.createElement("p", contactUsernameClassList);
             createdContactUsernameElement.textContent = user.contactUsername;
 
-            const contactButtonClassList = ["btn", "btn-primary"];
+            const contactButtonClassList = ["icon-default-size", "add-contact-button", "contact-add-default"];
             const createdAddContactButton = this.createElement("button", contactButtonClassList);
 
-            createdAddContactButton.textContent = "CONNECT";
-
             if (user.onContactList) {
-                createdAddContactButton.textContent = "CONNECTED";
-                createdAddContactButton.classList = "btn";
-                createdAddContactButton.style.backgroundColor = "#DCE1ED";
+                createdAddContactButton.classList.remove("contact-add-default")
+                createdAddContactButton.classList.add("contact-add-success");
             }
 
             createdAddContactButton.addEventListener('click', async () => {
@@ -99,20 +137,22 @@
                 };
 
                 if (!user.onContactList) {
-                    this.apiService.addContact(addContactPayload).then(({ onContactList }) => {
-                        if (onContactList) {
-                            createdAddContactButton.textContent = "CONNECTED";
-                            createdAddContactButton.classList = "btn";
-                            createdAddContactButton.style.backgroundColor = "#DCE1ED";
+                    this.apiService.addContact(addContactPayload)
+                                    .then(({ onContactList, contactId }) => {
+                        if(onContactList) {
+                            createdAddContactButton.classList.remove("contact-add-default");
+                            createdAddContactButton.classList.add("contact-add-success");
                         }
                     });
                 }
 
             });
 
-            creatededContactContainer.appendChild(createdContactUsernameElement);
-            creatededContactContainer.appendChild(createdAddContactButton);
-            this.contactModalBody.appendChild(creatededContactContainer);
+            createdContactContainer.appendChild(iconUser);
+            createdContactContainer.appendChild(createdContactUsernameElement);
+            createdContactContainer.appendChild(createdAddContactButton);
+        
+            this.contactModalBody.appendChild(createdContactContainer);
         }
 
         removeExistingMessages() {
@@ -190,7 +230,7 @@
             this.recipientName = document.getElementById('recepient-name');
         }
 
-        async startSendMessageHandler() {
+        async clickSendMessageHandler(){
             this.sendButton.addEventListener('click', async () => {
                 let payload = this.messagePayloadModel.getUpdatedMessagePayload()
                 const groupName = this.groupNameModel.getGroupName();
@@ -209,8 +249,36 @@
 
                 this.messageInput.value = "";
             })
+        }
 
-            return this.sendButton;
+        async pressEnterSendMessageHandler(){
+            this.messageInput.addEventListener("keydown", async (event) =>{
+                let payload = this.messagePayloadModel.getUpdatedMessagePayload();
+                const groupName = this.groupNameModel.getGroupName();
+
+                if(event.key === "Enter"){
+                    if (this.messageInput.value == null ||
+                        this.messageInput.value == "" ||
+                        this.recipientName.textContent == "" ||
+                        this.recipientName.textContent == null) {
+    
+                        return;
+                    }
+    
+                    payload.MessageContent = this.messageInput.value;
+    
+                    await this.connection.invoke("SendMessageToGroup", groupName, payload);
+    
+                    this.messageInput.value = "";
+                } else if(event.key === "Enter" && event.shiftKey) {
+                    window.alert("This is it!");
+                }
+            });
+        }
+        
+        async startSendMessageHandler() {
+            await this.clickSendMessageHandler();
+            await this.pressEnterSendMessageHandler();
         }
 
         async createHubConnection(groupName) {
@@ -280,6 +348,7 @@
             this.recipientName = document.getElementById('recepient-name');
             this.apiService = new ApiService();
             this.searchContactConvo = document.getElementById("search-contact-convo");
+            this.refreshContactListBtn = document.getElementById("refresh-contact-list");
             this.contactList = [];
             this.messageTemplate = messageTemplate;
             this.groupNameModel = groupNameModel;
@@ -290,17 +359,33 @@
         }
     
         async runContactService(){
+            
+            const contacts = await this.getContacts()
+    
+            this.displayContacts(contacts);
+
+            // run search handler here
+            this.runSearchConvoContactHandler();
+            this.runRefreshContactHandler();
+        }
+
+        async getContacts(){
             this.removeExistingContacts();
 
             const contactResponse = await this.apiService.getContacts();
             this.contactList.length = 0;
     
             if(contactResponse.length > 0 ) this.contactList = contactResponse;
-    
-            this.displayContacts(this.contactList);
 
-            // run search handler here
-            this.runSearchConvoContactHandler();
+            return this.contactList;
+        }
+
+        runRefreshContactHandler(){
+            this.refreshContactListBtn.addEventListener("click", async () => {
+                const contacts = await this.getContacts();
+                this.displayContacts(contacts)
+                this.searchContactConvo.value = "";
+            });
         }
     
         displayContacts(contacts){
@@ -696,6 +781,7 @@
         const messagePayloadModel = new MessagePayloadModel();
         const messageTemplate = new MessageTemplate();
         const messageHubService = new MessagingHubService(groupNameModel, messagePayloadModel);
+        
         const contactTemplate = new ContactTemplate(messageTemplate, 
                                                     groupNameModel, 
                                                     messagePayloadModel, 
@@ -727,4 +813,5 @@
     }
 
     mainApp();
+
 });
