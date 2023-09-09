@@ -16,11 +16,13 @@ namespace MyChat.Extentions
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IContactService, ContactService>();
             services.AddScoped<IMessageService, MessageService>();
+            
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 var connStr = config.GetConnectionString("DefaultConnection");
                 options.UseSqlServer(connStr);
             });
+            
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddControllersWithViews();
             services.AddSignalR();

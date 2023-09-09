@@ -12,8 +12,8 @@ using MyChat.Data;
 namespace MyChat.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230509074804_InitialMigrationForNewDatabase")]
-    partial class InitialMigrationForNewDatabase
+    [Migration("20230728050148_MigratetoAzure")]
+    partial class MigratetoAzure
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

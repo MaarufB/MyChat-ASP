@@ -1,5 +1,6 @@
 ﻿$(document).ready(function() {
 
+    // ContactModalTemplate
     class ContactModalTemplate {
         constructor() {
             this.apiService = new ApiService();
@@ -168,7 +169,7 @@
         }
     }
 
-
+    // Group Name Model
     class GroupNameModel {
         constructor() {
             this.groupName = null;
@@ -190,6 +191,7 @@
         }
     }
 
+    // MessagePayloadModel
     class MessagePayloadModel {
         constructor() {
             this.messagePayload = {
@@ -213,6 +215,7 @@
         }
     }
 
+    // MessagingHubService
     class MessagingHubService {
 
         constructor(groupNameModel, messagePayloadModel) {
@@ -341,6 +344,7 @@
         }
     }
 
+    // ContactTemplate
     class ContactTemplate {
         constructor(messageTemplate, groupNameModel, messagePayloadModel, messageHubService) {
             this.contactParentContainer = document.getElementById('contact-list-container');
@@ -537,6 +541,7 @@
         }
     }
 
+    //MessageTemplate
     class MessageTemplate {
         constructor() {
             this.messageParentContainer = document.getElementById('message-thread-container');
@@ -581,6 +586,7 @@
         }
     }
 
+    // ApiService
     class ApiService {
         constructor() {
             this.messagingUrl = "/message";
@@ -725,62 +731,88 @@
 
     }
 
+
+    class ActivityDetector {
+        #action = {
+            VIEW_MESSAGE: "VIEW_MESSAGE",
+            SCREEN_ADJUSTMENT: "SCREEN_ADJUSTMENT"
+        };
+
+        constructor(){
+
+        }
+    }
+    // ScreenDisplayService
     class ScreenDisplayService {
+        
         constructor() {
             this.leftContainer = document.getElementById('left-container');
             this.rightContainer = document.getElementById('right-container');
             this.closeMessageContainer = document.getElementById('close-message');
             this.testSize = document.getElementById("test-size");
+            this.isMessageView = false;
         }
 
-        runToggle() {
+        screenViewStatus(){
+            return this.isMessageView;
+        }
 
-            if (window.innerWidth < 700) {
-                jQuery.fx.off = true;
-
-                $('#left-container').toggle('hide-element');
-                $('#right-container').toggle('hide-element');
-            }
+        setMessageViewStatus(status){
+            this.isMessageView = status
         }
 
         screenDisplay(){
-            if (window.innerWidth < 575) {
-
-                let leftIsHidden = this.leftContainer.classList.contains("hide-element") || false;
-                
-                if(!leftIsHidden){
-                    this.leftContainer.classList.add("hide-element");
-                }                
-
-                let rightIsHidden = this.rightContainer.classList.contains("hide-element") || false;
-                if(rightIsHidden){
-                    this.rightContainer.classList.remove("hide-elemenent");
-                }
-
+            this.isMessageView = true;
+            
+            if(window.innerWidth <= 575){
+                this.leftContainer.classList.add("hide-element");
+                this.rightContainer.classList.remove("hide-element");
             }
+
+            if(window.innerWidth > 575){
+                this.leftContainer.classList.remove("hide-element");
+                this.rightContainer.classList.remove("hide-element");
+            }
+
         }
 
         runScreenSizeHandler() {
+
             window.onresize = () => {
                 if (window.innerWidth > 575) {
                     
                     let isLeftHidden = this.leftContainer.classList.contains("hide-element");
-                    
+                    let isRightHidden = this.rightContainer.classList.contains("hide-element");
+
                     if(isLeftHidden){
                         this.leftContainer.classList.remove("hide-element");
                     }
                     
-                    let isRightHidden = this.rightContainer.classList.contains("hide-element");
                     if(isRightHidden){
                         this.rightContainer.classList.remove("hide-element");
                     }
                 }
 
-                if(window.innerWidth < 575){
-                    this.rightContainer.classList.add("hide-element");
+                if(window.innerWidth <= 575){
+                    let isMessageHidde = this.rightContainer.classList.contains("hide-element");
+                    let isLeftHidden = this.leftContainer.classList.contains("hide-element");
+
+                    if(isLeftHidden){
+                        this.rightContainer.classList.remove("hide-element");
+                    }
+
+                    if(!isLeftHidden && !isMessageHidde){
+                        this.rightContainer.classList.add("hide-element");
+                    }
                 }
             }
+
+
+            if(window.innerWidth < 575){
+                this.rightContainer.classList.add("hide-element");
+            }
         }
+
     }
 
     const mainApp = async () => {
@@ -810,10 +842,8 @@
         });
 
         $("#close-message").click(() => {
-            $('#left-container').toggle('hide-element');
-            $('#right-container').toggle('hide-element');
+            screenDisplay.setMessageViewStatus(false);
             document.location.reload(true);
-            console.log("Reloading:")
         });
 
         $("#close-modal").click(function () {

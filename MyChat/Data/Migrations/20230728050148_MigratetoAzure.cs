@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MyChat.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigrationForNewDatabase : Migration
+    public partial class MigratetoAzure : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
