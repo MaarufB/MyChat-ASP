@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
 using MyChat.Models;
 using MyChat.Repositories.IRepository;
@@ -23,22 +24,23 @@ namespace MyChat.Hubs
             _unitOfWork = unitOfWork;
         }
 
-        // public override async Task OnConnectedAsync()
-        // {
-        //     var httpContext = Context.GetHttpContext();
-        //     var testContext = httpContext.Request;
-        //     var otherUser = httpContext.Request.Query["user"];
-            
+        // This is just a test
 
-        //     var contextConnectionId = Context.ConnectionId;
-        //     Console.WriteLine($"ConnectionId: {contextConnectionId}");
-            
-            
-        //     // await Clients.All.SendAsync("UserConnected", Context.ConnectionId);
-        //     await base.OnConnectedAsync();
-        
-        // }
-        
+        public override async Task OnConnectedAsync()
+        {
+            var httpContext = Context.GetHttpContext();
+
+            Console.WriteLine(httpContext.ToString());
+        }
+
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            var contextId = Context.ConnectionId;
+            Console.WriteLine(contextId.ToString());
+
+            await base.OnDisconnectedAsync(exception);
+        }
+
         private async Task AddToGroupAsync(string groupName)
         {
             string user = Context.User.Identity.Name;

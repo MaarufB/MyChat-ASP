@@ -46,7 +46,6 @@
                 <a 
                     class="nav-link text-dark" 
                     id="modal-button" 
-                    type="button" 
                     data-bs-toggle="modal"
                     data-bs-target="#staticBackdrop"
                     >
@@ -64,9 +63,10 @@
     @RenderBody()
   </main>
   
-<script src="~/js/signalr/dist/browser/signalr.js"></script>
+  <script src="~/js/signalr/dist/browser/signalr.js"></script>
   <script src="~/lib/jquery/dist/jquery.min.js"></script>
   <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+@*  <script src="~/js/site.js" type="module" asp-append-version="true"></script>*@
   @await RenderSectionAsync("Scripts", required: false)
 
 
