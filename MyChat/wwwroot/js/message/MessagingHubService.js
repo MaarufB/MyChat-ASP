@@ -1,4 +1,5 @@
-import ApiService from './api.js';
+import ApiService from '../api.js';
+import { constantElements, cssClass } from "./constant.js"
 
 export default class MessagingHubService {
 
@@ -12,6 +13,7 @@ export default class MessagingHubService {
 
         this.sendButton = document.getElementById('send-message');
         this.messageInput = document.getElementById('message-input');
+
         this.apiService = new ApiService();
         this.groupNameModel = groupNameModel;
         this.messagePayloadModel = messagePayloadModel;

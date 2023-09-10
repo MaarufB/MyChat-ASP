@@ -1,17 +1,21 @@
-import ApiService from './api.js';
+import ApiService from '../api.js';
+import { icons, payload } from "../helpers.js";
+import { constantElements, constantClass as cssClass} from "./constant.js";
+
 
 class ContactModalTemplate {
     constructor() {
         this.apiService = new ApiService();
-        this.contactModalBody = document.getElementById("contact-modal-body");
-        this.searchContactTextbox = document.getElementById("search-contact-modal");
-        this.loadContactButton = document.getElementById("refresh-users-list");
-        this.refrestModalList = document.getElementById("refresh-modal-list");
-        this.contactLists = [];
 
-        this.iconContact = "/images/icons/icon-user.png";
-        this.iconStatusDefault = "/images/icons/icon-add.png";
-        this.iconStatusSuccess = "/images/icons/icon-success.png";
+        this.contactModalBody = document.getElementById(constantElements.contactModalBody);
+        this.searchContactTextbox = document.getElementById(constantElements.searchContactTextbox);
+        this.loadContactButton = document.getElementById(constantElements.loadContactButton);
+        this.refrestModalList = document.getElementById(constantElements.refrestModalList);
+
+        this.contactLists = [];
+        this.iconContact = icons.contact.contactIcon;
+        this.iconStatusDefault = icons.contact.statusDefault;
+        this.iconStatusSuccess = icons.contact.statusSuccess;
     }
 
     async runContactModal() {
@@ -107,22 +111,17 @@ class ContactModalTemplate {
     }
 
     createUserElements(user) {
-        const contactContainerClassList = ["modal-contact-container"]
-        const createdContactContainer = this.createElement("div", contactContainerClassList);
 
-        const iconUserClass = ["icon-default-size"];
-        const iconUser = this.createIconImage(this.iconContact, iconUserClass);
-
-        const contactUsernameClassList = ["modal-contact-username"];
-        const createdContactUsernameElement = this.createElement("p", contactUsernameClassList);
+        const createdContactContainer = this.createElement("div", cssClass.contactContainer);
+        const iconUser = this.createIconImage(this.iconContact, [cssClass.iconDefaultSize]);
+        const createdContactUsernameElement = this.createElement("p", cssClass.contactUsername);
         createdContactUsernameElement.textContent = user.contactUsername;
 
-        const contactButtonClassList = ["icon-default-size", "add-contact-button", "contact-add-default"];
-        const createdAddContactButton = this.createElement("button", contactButtonClassList);
+        const createdAddContactButton = this.createElement("button", cssClass.contactButton);
 
         if (user.onContactList) {
-            createdAddContactButton.classList.remove("contact-add-default")
-            createdAddContactButton.classList.add("contact-add-success");
+            createdAddContactButton.classList.remove(cssClass.contactAddDefault)
+            createdAddContactButton.classList.add(cssClass.contactAddSuccess);
         }
 
         createdAddContactButton.addEventListener('click', async () => {
@@ -136,12 +135,16 @@ class ContactModalTemplate {
                 OnContactList: user.onContactList
             };
 
+            // TODO
+            //const addContactPayload = { ...payload.contact };
+            
+
             if (!user.onContactList) {
                 this.apiService.addContact(addContactPayload)
                     .then(({ onContactList, contactId }) => {
                         if (onContactList) {
-                            createdAddContactButton.classList.remove("contact-add-default");
-                            createdAddContactButton.classList.add("contact-add-success");
+                            createdAddContactButton.classList.remove(cssClass.contactAddDefault);
+                            createdAddContactButton.classList.add(cssClass.contactAddSuccess);
                         }
                     });
             }

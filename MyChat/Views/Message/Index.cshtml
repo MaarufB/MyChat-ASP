@@ -29,8 +29,8 @@
     </div>
 </div>
 
-<!-- Modal -->
-<div class="modal modal-dialog-scrollable" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
+<!-- Contact Modal -->
+<div class="modal fade modal-dialog-scrollable" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
     tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content shadow">
@@ -48,6 +48,38 @@
                 <button type="button" class="refresh-modal-button" id="refresh-modal-list">Refresh</button>
             </div>
             <div class="modal-body border" id="contact-modal-body" style="height: 60vh;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Modal -->
+
+<div class="modal fade modal-dialog-scrollable"
+     id="notificationModal" 
+    data-bs-backdrop="static" 
+    data-bs-keyboard="false" 
+    tabindex="-1"
+    aria-labelledby="notificationModalLabel"
+    aria-hidden="true">
+    
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="notificationModalLabel">Modal title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group">
+                    <li class="list-group-item">An item</li>
+                    <li class="list-group-item">A second item</li>
+                    <li class="list-group-item">A third item</li>
+                    <li class="list-group-item">A fourth item</li>
+                    <li class="list-group-item">And a fifth one</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

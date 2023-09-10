@@ -1,9 +1,9 @@
-﻿import ContactModalTemplate from "./contact.js";
+﻿import ContactModalTemplate from "./contact/contact.js";
 import GroupNameModel from "./GroupNameModel.js";
-import MessagePayloadModel from "./MessagePayloadModel.js";
-import MessagingHubService from "./MessagingHubService.js";
+import MessagePayloadModel from "./message/MessagePayloadModel.js";
+import MessagingHubService from "./message/MessagingHubService.js";
 import ContactTemplate from "./ContactTemplate.js";
-import MessageTemplate from "./MessageTemplate.js";
+import MessageTemplate from "./message/MessageTemplate.js";
 import ScreenDisplayService from "./ScreenDisplayService.js";
 
 $(document).ready(function () {
@@ -38,7 +38,6 @@ $(document).ready(function () {
         screenDisplay.runScreenSizeHandler();
 
         await messageHubService.startSendMessageHandler()
-        //await messageHubService.startIncomingMessageHandler()
 
         const contactModalTemplate = new ContactModalTemplate();
 
