@@ -26,20 +26,20 @@ namespace MyChat.Hubs
 
         // This is just a test
 
-        public override async Task OnConnectedAsync()
-        {
-            var httpContext = Context.GetHttpContext();
+        //public override async Task OnConnectedAsync()
+        //{
+        //    var httpContext = Context.GetHttpContext();
 
-            Console.WriteLine(httpContext.ToString());
-        }
+        //    Console.WriteLine(httpContext.ToString());
+        //}
 
-        public override async Task OnDisconnectedAsync(Exception exception)
-        {
-            var contextId = Context.ConnectionId;
-            Console.WriteLine(contextId.ToString());
+        //public override async Task OnDisconnectedAsync(Exception exception)
+        //{
+        //    var contextId = Context.ConnectionId;
+        //    Console.WriteLine(contextId.ToString());
 
-            await base.OnDisconnectedAsync(exception);
-        }
+        //    await base.OnDisconnectedAsync(exception);
+        //}
 
         private async Task AddToGroupAsync(string groupName)
         {

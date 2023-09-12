@@ -66,7 +66,8 @@ namespace MyChat.Controllers
         [Route("message/get-groupname/{id}")]
         public async Task<ActionResult<GroupNameVM>> GetGroupName(string id)
         {
-            if(string.IsNullOrEmpty(id)){
+            if(string.IsNullOrEmpty(id))
+            {
                 throw new Exception("RecipientId is null");
             }
 

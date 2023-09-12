@@ -38,6 +38,8 @@ $(document).ready(function () {
         screenDisplay.runScreenSizeHandler();
 
         await messageHubService.startSendMessageHandler()
+        await messageHubService.startIncomingMessageHandler();
+
 
         const contactModalTemplate = new ContactModalTemplate();
 

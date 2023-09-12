@@ -9,9 +9,9 @@
         </header>
         <div id="contact-list-container"></div>
     </div>
-    <div id="right-container">
+    <div class="border" id="right-container">
         <div class="messaging-container">
-            <header class="m-0 p-2 border shadow" id="message-header">
+            <header class="m-0 p-2 border" id="message-header">
                 <div class="recipient-container">
                     <p class="" id="recepient-name"></p>
                 </div>
@@ -86,4 +86,9 @@
 </div>
 
 
-<script src="~/js/site.js" type="module" asp-append-version="true"></script>
+@section Scripts{
+
+    @*<script src="~/js/message/MessagingHubService.js" asp-append-version="true"></script>*@
+
+    <script src="~/js/site.js" type="module" asp-append-version="true"></script>
+}

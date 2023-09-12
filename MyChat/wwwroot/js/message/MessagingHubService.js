@@ -4,12 +4,10 @@ import { constantElements, cssClass } from "./constant.js"
 export default class MessagingHubService {
 
     constructor(groupNameModel, messagePayloadModel) {
+
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl("/chatHub")
             .build();
-
-        // listen to an event OnReceiveMessage
-        this.connection.on("ReceiveMessage", this.onReceiveMessage);
 
         this.sendButton = document.getElementById('send-message');
         this.messageInput = document.getElementById('message-input');
@@ -20,6 +18,9 @@ export default class MessagingHubService {
 
         this.messageParentContainer = document.getElementById('message-thread-container');
         this.recipientName = document.getElementById('recepient-name');
+
+                 //listen to an event OnReceiveMessage
+        //this.connection.on("ReceiveMessage", this.onReceiveMessage);
     }
 
     async clickSendMessageHandler() {
@@ -83,9 +84,39 @@ export default class MessagingHubService {
 
     }
 
+
+    async startIncomingMessageHandler() {
+
+        this.connection.on("ReceiveMessage", async (message) => {
+            const createdMessageContainer = document.createElement('div');
+            const createdMessageText = document.createElement('p');
+
+            createdMessageText.classList = "message-content";
+
+            if (this.recipientName.textContent === message.recipientUsername) {
+                createdMessageContainer.classList.add("message-content-container", "message-text-right");
+                createdMessageText.textContent = message.messageContent;
+                createdMessageContainer.appendChild(createdMessageText);
+
+            } else {
+                createdMessageContainer.classList.add("message-content-container", "message-text-left");
+                createdMessageText.textContent = message.messageContent;
+                createdMessageContainer.appendChild(createdMessageText);
+            }
+
+            this.messageParentContainer.appendChild(createdMessageContainer)
+
+            this.messageParentContainer.scrollTop = this.messageParentContainer.scrollHeight;
+        });
+
+
+    }
+
     async onReceiveMessage(message) {
         const createdMessageContainer = document.createElement('div');
         const createdMessageText = document.createElement('p');
+
+        console.log("message")
 
         createdMessageText.classList = "message-content";
 
@@ -94,10 +125,14 @@ export default class MessagingHubService {
             createdMessageText.textContent = message.messageContent;
             createdMessageContainer.appendChild(createdMessageText);
 
+            console.log("right")
+
         } else {
             createdMessageContainer.classList.add("message-content-container", "message-text-left");
             createdMessageText.textContent = message.messageContent;
             createdMessageContainer.appendChild(createdMessageText);
+
+            console.log("left")
         }
 
         this.messageParentContainer.appendChild(createdMessageContainer)
